@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { FormState, LoanType } from "../types";
 import { formatINR } from "../utils/validators";
+import { Calculator } from "lucide-react";
+import LoanCalculatorSidebar from "./LoanCalculatorSidebar";
 
 interface StepProps {
   formState: FormState;
@@ -16,6 +18,28 @@ export default function Step1LoanType({
   registerBlur
 }: StepProps) {
   const { loanType, loanAmount, loanTenure, loanPurpose, referralCode } = formState;
+  const [showCalculator, setShowCalculator] = useState(false);
+
+  const handleSyncToApp = (amount: number, tenure: number, type: LoanType) => {
+    let defaultPurpose = "";
+    if (type === "Home") {
+      defaultPurpose = "New Home Purchase";
+    } else if (type === "Personal") {
+      defaultPurpose = "Medical Emergency";
+    } else if (type === "Business") {
+      defaultPurpose = "Working Capital";
+    }
+
+    const empUpdate = type === "Business" && formState.employmentType === "Salaried" ? { employmentType: "" as any } : {};
+
+    updateFormState({
+      loanType: type,
+      loanAmount: amount,
+      loanTenure: tenure,
+      loanPurpose: defaultPurpose,
+      ...empUpdate
+    });
+  };
 
   const handleLoanTypeChange = (type: LoanType) => {
     // Reset tenure & purpose when loan type changes to comply with constraints
@@ -73,12 +97,30 @@ export default function Step1LoanType({
 
   return (
     <div className="space-y-6" id="step1-container">
-      <div>
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight">Loan Product &amp; Amount</h2>
-        <p className="text-sm text-slate-500">Select your loan type, requested amount, and desired tenure.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-100 pb-4">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Loan Product &amp; Amount</h2>
+          <p className="text-sm text-slate-500">Select your loan type, requested amount, and desired tenure.</p>
+        </div>
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowCalculator(!showCalculator)}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer border ${
+              showCalculator
+                ? "bg-zinc-900 border-zinc-900 text-white hover:bg-zinc-800"
+                : "bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-50"
+            }`}
+          >
+            <Calculator className="h-3.5 w-3.5" />
+            {showCalculator ? "Hide Calculator Sandbox" : "Show Calculator Sandbox"}
+          </button>
+        </div>
       </div>
 
-      {/* Loan Type Selector */}
+      <div className={showCalculator ? "grid grid-cols-1 lg:grid-cols-12 gap-8 items-start" : "space-y-6"}>
+        <div className={showCalculator ? "lg:col-span-7 space-y-6" : "space-y-6"}>
+          {/* Loan Type Selector */}
       <div className="space-y-3">
         <label className="block text-sm font-medium text-slate-700">Loan Type *</label>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4" role="radiogroup" aria-label="Select loan type">
@@ -142,7 +184,7 @@ export default function Step1LoanType({
             onChange={handleAmountChange}
             onBlur={() => registerBlur("loanAmount")}
             placeholder="e.g. 5,00,000"
-            className={`block w-full pl-8 pr-12 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            className={`block w-full pl-10 pr-12 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errors.loanAmount ? "border-red-500" : "border-slate-200 hover:border-slate-300"
             }`}
             aria-invalid={errors.loanAmount ? "true" : "false"}
@@ -253,6 +295,19 @@ export default function Step1LoanType({
             {errors.referralCode}
           </p>
         )}
+      </div>
+      </div>
+
+      {showCalculator && (
+        <div className="lg:col-span-5 lg:sticky lg:top-24">
+          <LoanCalculatorSidebar
+            currentLoanType={loanType}
+            appAmount={loanAmount}
+            appTenure={loanTenure}
+            onSyncToApp={handleSyncToApp}
+          />
+        </div>
+      )}
       </div>
     </div>
   );

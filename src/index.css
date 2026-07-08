@@ -54,6 +54,20 @@ textarea {
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
+/* Explicit custom padding helper classes to support input icons */
+input.pl-8 {
+  padding-left: 2rem !important;
+}
+input.pl-10 {
+  padding-left: 2.5rem !important;
+}
+input.pl-12 {
+  padding-left: 3rem !important;
+}
+input.pr-12 {
+  padding-right: 3rem !important;
+}
+
 input:hover, select:hover, textarea:hover {
   border-color: #a1a1aa !important; /* zinc-400 */
 }
