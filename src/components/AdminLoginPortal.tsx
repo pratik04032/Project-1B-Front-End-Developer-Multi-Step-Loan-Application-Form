@@ -36,9 +36,11 @@ interface LoginPortalProps {
   language: string;
 }
 
-export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
+export default function AdminLoginPortal({ onLogin, language }: LoginPortalProps) {
     const [email, setEmail] = useState("");
-      const [isLoading, setIsLoading] = useState(false);
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Captcha State
@@ -182,7 +184,7 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
       if (user && user.email) {
         const email = user.email.toLowerCase();
         // Identify if the logged-in email is the admin bootstrapped email
-        const isAdmin = email === "pratikkumarjena04@gmail.com" || email === "you@example.com";
+        const isAdmin = email === "pratikkumarjena04@gmail.com" || email === "admin@lendswift.com";
         triggerWebAuthn({
           email,
           role: isAdmin ? "admin" : "applicant",
@@ -220,16 +222,31 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
     setIsLoading(true);
 
     setTimeout(() => {
-      if (!email.trim() || !email.includes("@")) {
-        setError(
-          language === "hi"
-            ? "कृपया एक वैध ईमेल पता दर्ज करें।"
-            : language === "or"
-            ? "ଦୟାକରି ଏକ ବୈଧ ଇମେଲ୍ ଠିକଣା ପ୍ରବେଶ କରନ୍ତୁ |"
-            : "Please enter a valid email address."
-        );
+      if (true) {
+        if (email.trim().toLowerCase() === "admin@lendswift.com" && password === "admin123") {
+          triggerWebAuthn({ email: email.trim(), role: "admin" });
+        } else {
+          setError(
+            language === "hi"
+              ? "अमान्य क्रेडेंशियल्स। कृपया admin@lendswift.com और पासवर्ड admin123 का उपयोग करें।"
+              : language === "or"
+              ? "ଅମାନ୍ୟ କ୍ରେଡେନ୍ସିଆଲ୍ | ଦୟାକରି admin@lendswift.com ଏବଂ ପାସୱାର୍ଡ admin123 ବ୍ୟବହାର କରନ୍ତୁ |"
+              : "Invalid administrator credentials. Please use admin@lendswift.com & password admin123"
+          );
+        }
       } else {
-        triggerWebAuthn({ email: email.trim().toLowerCase(), role: "applicant" });
+        // Applicant Login
+        if (!email.trim() || !email.includes("@")) {
+          setError(
+            language === "hi"
+              ? "कृपया एक वैध ईमेल पता दर्ज करें।"
+              : language === "or"
+              ? "ଦୟାକରି ଏକ ବୈଧ ଇମେଲ୍ ଠିକଣା ପ୍ରବେଶ କରନ୍ତୁ |"
+              : "Please enter a valid email address."
+          );
+        } else {
+          triggerWebAuthn({ email: email.trim().toLowerCase(), role: "applicant" });
+        }
       }
       setIsLoading(false);
     }, 600);
@@ -240,7 +257,12 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
     setError(null);
   };
 
-  
+  const quickFillAdmin = () => {
+    setEmail("admin@lendswift.com");
+    setPassword("admin123");
+    setError(null);
+  };
+
   return (
     <div className="min-h-[85vh] flex items-center justify-center p-4 md:p-8 animate-fadeIn" id="login-portal-container">
       <div className="w-full max-w-md bg-white border border-zinc-200 rounded-2xl shadow-xl overflow-hidden flex flex-col transition-all">
@@ -278,7 +300,7 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
             {/* Email field */}
             <div className="space-y-1.5">
               <label htmlFor="email" className="block text-[11px] uppercase tracking-wider font-semibold text-zinc-500">
-                "Applicant Email Address"
+                "Admin Email Address"
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
@@ -286,7 +308,7 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
                   id="email"
                   type="email"
                   required
-                  placeholder="you@example.com"
+                  placeholder="admin@lendswift.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white border border-zinc-200 rounded-lg text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 text-xs font-sans transition-all"
@@ -294,7 +316,36 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
               </div>
             </div>
 
-            </div>
+            {/* Password field (Admin only) */}
+            
+              <div className="space-y-1.5 animate-fadeIn">
+                <div className="flex justify-between items-center">
+                  <label htmlFor="password" className="block text-[11px] uppercase tracking-wider font-semibold text-zinc-500">
+                    Administrator Password
+                  </label>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-10 pr-10 py-2.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white border border-zinc-200 rounded-lg text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 text-xs font-sans transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+          </div>
+
           {/* Captcha Verification */}
           <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-3 flex items-center justify-between shadow-2xs select-none">
             <div className="flex items-center gap-3">

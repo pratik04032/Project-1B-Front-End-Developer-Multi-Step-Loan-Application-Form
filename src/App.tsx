@@ -37,6 +37,7 @@ import Step7Documents from "./components/Step7Documents";
 import Step8Review from "./components/Step8Review";
 import AdminDashboard from "./components/AdminDashboard";
 import LoginPortal from "./components/LoginPortal";
+import AdminLoginPortal from "./components/AdminLoginPortal";
 
 export default function App() {
   const { language, setLanguage, t, languages } = useLanguage();
@@ -61,6 +62,7 @@ export default function App() {
   } | null>(null);
 
   // Admin Portal & Defaulter check states
+  const [isAdminLoginView, setIsAdminLoginView] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ email: string; role: "admin" | "applicant" } | null>(() => {
     try {
       const saved = localStorage.getItem("lendswift_user");
@@ -883,13 +885,46 @@ export default function App() {
       <main className="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6 lg:p-8 space-y-6">
         
         {!currentUser ? (
-          <LoginPortal
-            onLogin={(user) => {
-              setCurrentUser(user);
-              localStorage.setItem("lendswift_user", JSON.stringify(user));
-            }}
-            language={language}
-          />
+          <>
+            {isAdminLoginView ? (
+            <div className="w-full max-w-md mx-auto">
+              <AdminLoginPortal
+                onLogin={(user) => {
+                  setCurrentUser(user);
+                  localStorage.setItem("lendswift_user", JSON.stringify(user));
+                }}
+                language={language}
+              />
+              <div className="text-center mt-4 pb-8">
+                <button 
+                  onClick={() => setIsAdminLoginView(false)}
+                  className="text-xs text-zinc-500 hover:text-zinc-800 transition-colors"
+                >
+                  Return to Applicant Login
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="w-full max-w-md mx-auto">
+              <LoginPortal
+                onLogin={(user) => {
+                  setCurrentUser(user);
+                  localStorage.setItem("lendswift_user", JSON.stringify(user));
+                }}
+                language={language}
+              />
+              <div className="text-center mt-4 pb-8">
+                <button 
+                  onClick={() => setIsAdminLoginView(true)}
+                  className="text-[10px] text-zinc-400 hover:text-zinc-600 transition-colors"
+                >
+                  Admin Access
+                </button>
+              </div>
+            </div>
+          )}            </>
+
+
         ) : isAdminView ? (
           <AdminDashboard
             applications={adminApplications}
