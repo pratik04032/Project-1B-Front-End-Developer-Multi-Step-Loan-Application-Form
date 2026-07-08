@@ -15,6 +15,7 @@ import {
 import { findLatestDraft, clearDraft, clearAllDrafts } from "./utils/drafts";
 import { decryptData } from "./utils/encryption";
 import { useAutoSave } from "./hooks/useAutoSave";
+import SessionTimer from "./components/SessionTimer";
 
 // Import step components
 import Step1LoanType from "./components/Step1LoanType";
@@ -219,6 +220,15 @@ export default function App() {
     setResumeModalData(null);
   };
 
+  const handleSessionExpired = () => {
+    clearAllDrafts();
+    setFormState(INITIAL_FORM_STATE);
+    setCurrentStep(1);
+    setResumeModalData(null);
+    setErrors({});
+    setBlurredFields({});
+  };
+
   const handleSubmitApplication = () => {
     // Perform final check of all 8 steps
     const stepErrors = validateAllSteps(formState);
@@ -364,6 +374,13 @@ export default function App() {
   return (
     <div className="min-h-screen bg-zinc-50 font-sans text-zinc-800 antialiased flex flex-col justify-between" id="app-wrapper">
       
+      {/* SESSION SECURITY TIMER */}
+      <SessionTimer
+        onExpire={handleSessionExpired}
+        formState={formState}
+        currentStep={currentStep}
+      />
+
       {/* GLOBAL NOTIFICATION TOAST */}
       {toastMessage && (
         <div className="fixed top-6 right-6 z-50 bg-zinc-900 text-zinc-100 text-xs font-medium px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 border border-zinc-800 animate-fadeIn" role="status">
