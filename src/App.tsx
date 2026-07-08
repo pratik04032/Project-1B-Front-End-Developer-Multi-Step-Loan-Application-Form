@@ -26,6 +26,7 @@ import { saveApplication, checkIfDefaulter, getAllApplications, setDefaulterStat
 import confetti from "canvas-confetti";
 
 // Import step components
+import CibilChecker from "./components/CibilChecker";
 import Step1LoanType from "./components/Step1LoanType";
 import Step2PersonalInfo from "./components/Step2PersonalInfo";
 import Step3KYC from "./components/Step3KYC";
@@ -41,6 +42,7 @@ export default function App() {
   const { language, setLanguage, t, languages } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const [formState, setFormState] = useState<FormState>(INITIAL_FORM_STATE);
+  const [cibilChecked, setCibilChecked] = useState(() => localStorage.getItem("lendswift_cibil_checked") === "true");
   const [currentStep, setCurrentStep] = useState(1);
   const [direction, setDirection] = useState(1);
   const [blurredFields, setBlurredFields] = useState<Record<string, boolean>>({});
@@ -701,6 +703,14 @@ export default function App() {
   const completionPercentage = Math.round(
     ((currentActiveIndex) / (activeStepCount - 1)) * 100
   );
+
+  
+  if (!cibilChecked && currentUser?.role !== "admin" && !resumeModalData && !globalSuccess && !isAdminView) {
+    return <CibilChecker onComplete={(score) => {
+      localStorage.setItem("lendswift_cibil_checked", "true");
+      setCibilChecked(true);
+    }} />;
+  }
 
   return (
     <div className="min-h-screen bg-zinc-50 font-sans text-zinc-800 antialiased flex flex-col justify-between" id="app-wrapper">
