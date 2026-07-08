@@ -50,6 +50,7 @@ export default function App() {
 
   // Save/Notification states
   const [toastMessage, setToastMessage] = useState("");
+  const [progressToast, setProgressToast] = useState<{show: boolean, percentage: number}>({show: false, percentage: 0});
   const [showSavedIndicator, setShowSavedIndicator] = useState(false);
   const [resumeModalData, setResumeModalData] = useState<{
     loanType: string;
@@ -275,6 +276,12 @@ export default function App() {
         setCurrentStep(nextStep);
         setBlurredFields({});
       });
+      
+      const percentage = Math.round(((nextStep - 1) / 8) * 100);
+      setProgressToast({ show: true, percentage });
+      setTimeout(() => {
+        setProgressToast(prev => ({ ...prev, show: false }));
+      }, 3000);
       
       // Set accessibility focus to top of main wizard content container
       setTimeout(() => {
@@ -726,6 +733,40 @@ export default function App() {
           >
             <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
             <span>Saved</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* PROGRESS TOAST */}
+      <AnimatePresence>
+        {progressToast.show && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-white border border-zinc-200 shadow-lg text-zinc-800 text-sm font-medium px-5 py-3 rounded-full flex items-center gap-3"
+          >
+            <div className="relative h-5 w-5 flex items-center justify-center">
+              <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 36 36">
+                <path
+                  className="text-zinc-100"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="text-zinc-900 transition-all duration-500"
+                  strokeDasharray={`${progressToast.percentage}, 100`}
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+              </svg>
+            </div>
+            <span>{progressToast.percentage}% Completed</span>
           </motion.div>
         )}
       </AnimatePresence>
