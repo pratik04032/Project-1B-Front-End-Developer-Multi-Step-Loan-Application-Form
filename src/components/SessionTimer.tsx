@@ -7,9 +7,9 @@ interface SessionTimerProps {
   currentStep: number;
 }
 
-// Default constants: 15 minutes total inactivity, 5 minutes warning
+// Default constants: 15 minutes total inactivity, 60 seconds warning
 const DEFAULT_INACTIVITY_LIMIT_MS = 15 * 60 * 1000; // 15 minutes
-const DEFAULT_WARNING_LIMIT_MS = 5 * 60 * 1000;      // 5 minutes
+const DEFAULT_WARNING_LIMIT_MS = 60 * 1000;         // 60 seconds
 
 export default function SessionTimer({ onExpire, formState, currentStep }: SessionTimerProps) {
   // We allow a "Test Mode" to let users/testers speed up the timer
@@ -128,29 +128,29 @@ export default function SessionTimer({ onExpire, formState, currentStep }: Sessi
 
   return (
     <>
-      {/* 5-MINUTE WARNING MODAL / FLOATING BANNER */}
+      {/* 60-SECOND WARNING MODAL / FLOATING BANNER */}
       {showWarning && (
-        <div className="fixed inset-0 bg-zinc-900/30 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 md:p-8 space-y-6 border border-zinc-200 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="timer-warning-title">
+        <div className="fixed bottom-4 right-4 z-50 animate-fadeIn shadow-2xl">
+          <div className="bg-white rounded-xl max-w-sm w-full p-5 space-y-4 border border-zinc-200" role="dialog" aria-modal="true" aria-labelledby="timer-warning-title">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-zinc-100 text-zinc-900 rounded-full flex items-center justify-center border border-zinc-200 shrink-0">
+              <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-full flex items-center justify-center border border-orange-100 shrink-0">
                 <AlertTriangle className="h-5 w-5" />
               </div>
               <div>
                 <h3 id="timer-warning-title" className="text-sm font-semibold text-zinc-950">
-                  Inactivity Security Warning
+                  Session Expiring Soon
                 </h3>
-                <p className="text-xs text-zinc-400">
-                  To protect your sensitive financial data, sessions expire after {isTestMode ? "30 seconds" : "15 minutes"}.
+                <p className="text-xs text-zinc-500">
+                  Inactivity detected.
                 </p>
               </div>
             </div>
 
             {/* Visual Progress ring or bar */}
-            <div className="bg-zinc-50 border border-zinc-200 rounded p-4 space-y-3">
+            <div className="bg-zinc-50 border border-zinc-200 rounded p-3 space-y-2">
               <div className="flex justify-between items-center font-mono">
-                <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-medium">Session Expiring In</span>
-                <span className="text-sm font-semibold text-zinc-950 animate-pulse">
+                <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-medium">Expiring In</span>
+                <span className="text-sm font-semibold text-red-600 animate-pulse">
                   {formatTime(remainingTime)}
                 </span>
               </div>
@@ -158,28 +158,28 @@ export default function SessionTimer({ onExpire, formState, currentStep }: Sessi
               {/* Progress Bar */}
               <div className="h-1 bg-zinc-200 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-zinc-900 transition-all duration-500"
+                  className="h-full bg-red-600 transition-all duration-500"
                   style={{ width: `${(remainingTime / warningLimit) * 100}%` }}
                 ></div>
               </div>
             </div>
 
             <p className="text-xs text-zinc-500 leading-relaxed">
-              If you are still working, click below or interact with the page to secure your session and keep your draft. Otherwise, your draft will be securely deleted.
+              Extend session to prevent losing your progress.
             </p>
 
-            <div className="flex gap-2 pt-2">
+            <div className="flex gap-2">
               <button
                 type="button"
                 onClick={handleExtend}
-                className="w-full px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs rounded transition-colors cursor-pointer text-center"
+                className="w-full px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs rounded transition-colors cursor-pointer text-center"
               >
                 Extend Session
               </button>
             </div>
 
             {isTestMode && (
-              <div className="text-center">
+              <div className="text-center pt-1">
                 <button
                   type="button"
                   onClick={() => setIsTestMode(false)}

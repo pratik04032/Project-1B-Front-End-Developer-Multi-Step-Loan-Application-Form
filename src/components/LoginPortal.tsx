@@ -22,7 +22,10 @@ import {
   Dog,
   Heart,
   Camera,
-  Leaf
+  Leaf,
+  ScanFace,
+  Fingerprint,
+  Smartphone
 } from "lucide-react";
 import { motion } from "motion/react";
 import { auth } from "../lib/firebase";
@@ -49,6 +52,11 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
   const [captchaGrid, setCaptchaGrid] = useState<{ icon: any; category: string; id: number }[]>([]);
   const [targetCategory, setTargetCategory] = useState<string>("vehicles");
   const [captchaError, setCaptchaError] = useState<string | null>(null);
+
+  // WebAuthn / FaceID State
+  const [showWebAuthn, setShowWebAuthn] = useState(false);
+  const [webAuthnStatus, setWebAuthnStatus] = useState<"idle" | "scanning" | "success" | "error">("idle");
+  const [pendingLogin, setPendingLogin] = useState<{ email: string; role: "admin" | "applicant"; displayName?: string; uid?: string } | null>(null);
 
   const generateCaptcha = () => {
     const pool = [
@@ -152,6 +160,21 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
     }
   };
 
+  const triggerWebAuthn = (userPayload: { email: string; role: "admin" | "applicant"; displayName?: string; uid?: string }) => {
+    setPendingLogin(userPayload);
+    setShowWebAuthn(true);
+    setWebAuthnStatus("scanning");
+    
+    // Simulate WebAuthn process
+    setTimeout(() => {
+      setWebAuthnStatus("success");
+      setTimeout(() => {
+        onLogin(userPayload);
+        setShowWebAuthn(false);
+      }, 1000);
+    }, 2500);
+  };
+
   const handleGoogleSignIn = async () => {
     setError(null);
     setIsLoading(true);
@@ -163,7 +186,7 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
         const email = user.email.toLowerCase();
         // Identify if the logged-in email is the admin bootstrapped email
         const isAdmin = email === "pratikkumarjena04@gmail.com" || email === "admin@lendswift.com";
-        onLogin({
+        triggerWebAuthn({
           email,
           role: isAdmin ? "admin" : "applicant",
           displayName: user.displayName || undefined,
@@ -202,7 +225,7 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
     setTimeout(() => {
       if (activeTab === "admin") {
         if (email.trim().toLowerCase() === "admin@lendswift.com" && password === "admin123") {
-          onLogin({ email: email.trim(), role: "admin" });
+          triggerWebAuthn({ email: email.trim(), role: "admin" });
         } else {
           setError(
             language === "hi"
@@ -223,7 +246,7 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
               : "Please enter a valid email address."
           );
         } else {
-          onLogin({ email: email.trim().toLowerCase(), role: "applicant" });
+          triggerWebAuthn({ email: email.trim().toLowerCase(), role: "applicant" });
         }
       }
       setIsLoading(false);
@@ -602,6 +625,77 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
                 >
                   {language === "hi" ? "सत्यापित करें" : language === "or" ? "ଯାଞ୍ଚ କରନ୍ତୁ" : "Verify"}
                 </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* WebAuthn / FaceID Modal */}
+      {showWebAuthn && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[60] p-4 animate-fadeIn">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-zinc-950 w-full max-w-[320px] rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden flex flex-col items-center justify-center text-center p-8 relative"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,#3f3f46,transparent)] opacity-30"></div>
+            
+            <div className="relative z-10 flex flex-col items-center gap-6 w-full">
+              {/* Animated Icon Container */}
+              <div className="relative h-24 w-24 flex items-center justify-center">
+                {webAuthnStatus === "scanning" && (
+                  <>
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.8, 0.3] }}
+                      transition={{ repeat: Infinity, duration: 2 }}
+                      className="absolute inset-0 bg-blue-500/20 rounded-full blur-xl"
+                    />
+                    <ScanFace className="h-14 w-14 text-blue-400 animate-pulse" />
+                    {/* Scanning line animation */}
+                    <motion.div
+                      initial={{ top: "10%" }}
+                      animate={{ top: "90%" }}
+                      transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                      className="absolute left-[20%] right-[20%] h-0.5 bg-blue-400 shadow-[0_0_8px_2px_rgba(96,165,250,0.6)] z-20"
+                    />
+                  </>
+                )}
+                {webAuthnStatus === "success" && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="h-16 w-16 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-[0_0_15px_5px_rgba(16,185,129,0.3)]"
+                  >
+                    <Check className="h-8 w-8 stroke-[3px]" />
+                  </motion.div>
+                )}
+              </div>
+
+              {/* Status Text */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-white tracking-tight">
+                  {webAuthnStatus === "scanning" && (
+                    language === "hi" ? "चेहरे की पहचान..." : language === "or" ? "ଚେହେରା ଚିହ୍ନଟ..." : "FaceID Verification"
+                  )}
+                  {webAuthnStatus === "success" && (
+                    language === "hi" ? "सत्यापित!" : language === "or" ? "ଯାଞ୍ଚ ହୋଇଛି!" : "Verified!"
+                  )}
+                </h3>
+                <p className="text-xs font-medium text-zinc-400">
+                  {webAuthnStatus === "scanning" && (
+                    language === "hi" ? "सुरक्षित रूप से अपनी पहचान की पुष्टि करें।" : language === "or" ? "ସୁରକ୍ଷିତ ଭାବରେ ଆପଣଙ୍କ ପରିଚୟ ଯାଞ୍ଚ କରନ୍ତୁ |" : "Confirming your identity securely."
+                  )}
+                  {webAuthnStatus === "success" && (
+                    language === "hi" ? "लॉगिन सफल। रीडायरेक्ट कर रहा है..." : language === "or" ? "ଲଗଇନ୍ ସଫଳ ହେଲା। ରିଡାଇରେକ୍ଟ କରାଯାଉଛି..." : "Login successful. Redirecting..."
+                  )}
+                </p>
+              </div>
+
+              {/* Simulated Device Frame indicator */}
+              <div className="mt-2 text-[10px] text-zinc-500 font-medium uppercase tracking-widest flex items-center gap-1.5 bg-zinc-900 px-3 py-1.5 rounded-full border border-zinc-800 shadow-inner">
+                <Smartphone className="h-3 w-3" />
+                <span>WebAuthn</span>
               </div>
             </div>
           </motion.div>

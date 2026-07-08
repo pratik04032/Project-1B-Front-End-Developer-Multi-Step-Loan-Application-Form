@@ -23,7 +23,7 @@ import { Globe, Sun, Moon, Sparkles, Printer, ShieldAlert, Search, Users, CheckC
 import { useTheme } from "./context/ThemeContext";
 import { validateAadhaar } from "./utils/validators";
 import { saveApplication, checkIfDefaulter, getAllApplications, setDefaulterStatus, getUserApplication } from "./lib/firebase";
-
+import confetti from "canvas-confetti";
 
 // Import step components
 import Step1LoanType from "./components/Step1LoanType";
@@ -546,6 +546,14 @@ export default function App() {
     setSuccessRefId(uniqueId);
     setGlobalSuccess(true);
     
+    // Trigger success confetti animation
+    confetti({
+      particleCount: 150,
+      spread: 80,
+      origin: { y: 0.6 },
+      colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+    });
+    
     // Clear draft to respect data minimisation principles on final submission
     clearAllDrafts();
   };
@@ -1015,16 +1023,26 @@ export default function App() {
                       {t("submitApplication")}
                     </button>
                   ) : (
-                    <button
+                    <motion.button
                       type="button"
                       onClick={handleNext}
+                      animate={
+                        Object.keys(validateCurrentStepOnly()).length === 0
+                          ? { scale: [1, 1.03, 1] }
+                          : { scale: 1 }
+                      }
+                      transition={
+                        Object.keys(validateCurrentStepOnly()).length === 0
+                          ? { repeat: Infinity, duration: 2, ease: "easeInOut" }
+                          : {}
+                      }
                       className="px-5 py-2 bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs rounded transition-colors cursor-pointer flex items-center gap-1"
                     >
                       {t("continue")}
                       <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                       </svg>
-                    </button>
+                    </motion.button>
                   )}
                 </div>
               </div>
