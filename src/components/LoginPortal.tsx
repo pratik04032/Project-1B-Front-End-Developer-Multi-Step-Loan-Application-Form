@@ -1,5 +1,29 @@
 import React, { useState } from "react";
-import { ShieldAlert, Users, Lock, Mail, Eye, EyeOff, ArrowRight } from "lucide-react";
+import {
+  ShieldAlert,
+  Users,
+  Lock,
+  Mail,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  RefreshCw,
+  HelpCircle,
+  Check,
+  Car,
+  Bike,
+  Home,
+  Coffee,
+  Key,
+  Laptop,
+  Sun,
+  Moon,
+  Umbrella,
+  Dog,
+  Heart,
+  Camera,
+  Leaf
+} from "lucide-react";
 import { motion } from "motion/react";
 import { auth } from "../lib/firebase";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
@@ -16,6 +40,117 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Captcha State
+  const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
+  const [isCaptchaVerifying, setIsCaptchaVerifying] = useState(false);
+  const [showChallenge, setShowChallenge] = useState(false);
+  const [selectedTiles, setSelectedTiles] = useState<number[]>([]);
+  const [captchaGrid, setCaptchaGrid] = useState<{ icon: any; category: string; id: number }[]>([]);
+  const [targetCategory, setTargetCategory] = useState<string>("vehicles");
+  const [captchaError, setCaptchaError] = useState<string | null>(null);
+
+  const generateCaptcha = () => {
+    const pool = [
+      { icon: Car, category: "vehicles" },
+      { icon: Bike, category: "vehicles" },
+      { icon: Home, category: "household" },
+      { icon: Coffee, category: "household" },
+      { icon: Key, category: "household" },
+      { icon: Laptop, category: "household" },
+      { icon: Sun, category: "sky" },
+      { icon: Moon, category: "sky" },
+      { icon: Umbrella, category: "sky" },
+      { icon: Dog, category: "other" },
+      { icon: Heart, category: "other" },
+      { icon: Camera, category: "other" },
+      { icon: Leaf, category: "other" },
+    ];
+
+    const categories = ["vehicles", "household", "sky"];
+    const target = categories[Math.floor(Math.random() * categories.length)];
+    setTargetCategory(target);
+
+    const targetItems = pool.filter(p => p.category === target);
+    const otherItems = pool.filter(p => p.category !== target);
+
+    const shuffledTarget = [...targetItems].sort(() => Math.random() - 0.5);
+    const targetCount = Math.floor(Math.random() * 2) + 3; // 3 or 4 targets
+    const selectedTarget = shuffledTarget.slice(0, targetCount);
+
+    const shuffledOther = [...otherItems].sort(() => Math.random() - 0.5);
+    const selectedOther = shuffledOther.slice(0, 9 - targetCount);
+
+    const finalGrid = [...selectedTarget, ...selectedOther]
+      .sort(() => Math.random() - 0.5)
+      .map((item, index) => ({
+        ...item,
+        id: index
+      }));
+
+    setCaptchaGrid(finalGrid);
+    setSelectedTiles([]);
+    setCaptchaError(null);
+  };
+
+  const handleCaptchaClick = () => {
+    if (isCaptchaVerified || isCaptchaVerifying) return;
+    setIsCaptchaVerifying(true);
+    setCaptchaError(null);
+    setTimeout(() => {
+      setIsCaptchaVerifying(false);
+      generateCaptcha();
+      setShowChallenge(true);
+    }, 1000);
+  };
+
+  const toggleTile = (index: number) => {
+    if (selectedTiles.includes(index)) {
+      setSelectedTiles(selectedTiles.filter(idx => idx !== index));
+    } else {
+      setSelectedTiles([...selectedTiles, index]);
+    }
+  };
+
+  const handleCaptchaVerify = () => {
+    const targetIndices = captchaGrid
+      .map((item, idx) => (item.category === targetCategory ? idx : -1))
+      .filter(idx => idx !== -1);
+
+    const isCorrect =
+      targetIndices.length === selectedTiles.length &&
+      targetIndices.every(idx => selectedTiles.includes(idx));
+
+    if (isCorrect) {
+      setIsCaptchaVerified(true);
+      setShowChallenge(false);
+      setCaptchaError(null);
+    } else {
+      setCaptchaError(
+        language === "hi"
+          ? "गलत चयन। कृपया पुनः प्रयास करें।"
+          : language === "or"
+          ? "ଭୁଲ୍ ଚୟନ। ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ।"
+          : "Incorrect selection. Please try again."
+      );
+      setTimeout(() => {
+        generateCaptcha();
+      }, 1200);
+    }
+  };
+
+  const getCategoryLabel = (cat: string) => {
+    switch (cat) {
+      case "vehicles":
+        return language === "hi" ? "वाहनों (Vehicles)" : language === "or" ? "ଯାନବାହନ (Vehicles)" : "vehicles";
+      case "household":
+        return language === "hi" ? "घरेलू उपकरणों/वस्तुओं (Household items)" : language === "or" ? "ଘରୋଇ ସାମଗ୍ରୀ (Household items)" : "household items";
+      case "sky":
+        return language === "hi" ? "आसमान/मौसम से संबंधित वस्तुओं (Sky/Weather items)" : language === "or" ? "ଆକାଶ/ପାଣିପାଗ ସମ୍ବନ୍ଧୀୟ (Sky/Weather items)" : "sky/weather items";
+      default:
+        return cat;
+    }
+  };
 
   const handleGoogleSignIn = async () => {
     setError(null);
@@ -50,6 +185,18 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!isCaptchaVerified) {
+      setError(
+        language === "hi"
+          ? "कृपया 'मैं रोबोट नहीं हूँ' सत्यापन पूरा करें।"
+          : language === "or"
+          ? "ଦୟାକରି 'ମୁଁ ରୋବର୍ଟ ନୁହେଁ' ଯାଞ୍ଚ ସମ୍ପୂର୍ଣ୍ଣ କରନ୍ତୁ।"
+          : "Please complete the 'I'm not a robot' verification."
+      );
+      return;
+    }
+
     setIsLoading(true);
 
     setTimeout(() => {
@@ -125,6 +272,9 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
               setEmail("");
               setPassword("");
               setError(null);
+              setIsCaptchaVerified(false);
+              setIsCaptchaVerifying(false);
+              setShowChallenge(false);
             }}
             className={`flex-1 py-3 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === "applicant"
@@ -145,6 +295,9 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
               setEmail("");
               setPassword("");
               setError(null);
+              setIsCaptchaVerified(false);
+              setIsCaptchaVerifying(false);
+              setShowChallenge(false);
             }}
             className={`flex-1 py-3 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === "admin"
@@ -217,6 +370,46 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Captcha Verification */}
+          <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-3 flex items-center justify-between shadow-2xs select-none">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                disabled={isCaptchaVerified || isCaptchaVerifying}
+                onClick={handleCaptchaClick}
+                className={`h-6 w-6 rounded border transition-all flex items-center justify-center cursor-pointer ${
+                  isCaptchaVerified
+                    ? "bg-emerald-500 border-emerald-500 text-white"
+                    : isCaptchaVerifying
+                    ? "border-zinc-300"
+                    : "border-zinc-300 bg-white hover:border-zinc-400"
+                }`}
+                id="captcha-checkbox-btn"
+              >
+                {isCaptchaVerified ? (
+                  <Check className="h-4 w-4 stroke-[3px]" />
+                ) : isCaptchaVerifying ? (
+                  <span className="animate-spin h-3.5 w-3.5 border-2 border-zinc-500 border-t-transparent rounded-full"></span>
+                ) : null}
+              </button>
+              <span className="text-xs font-semibold text-zinc-700">
+                {language === "hi"
+                  ? "मैं रोबोट नहीं हूँ"
+                  : language === "or"
+                  ? "ମୁଁ ରୋବର୍ଟ ନୁହେଁ"
+                  : "I'm not a robot"}
+              </span>
+            </div>
+            
+            <div className="flex flex-col items-end opacity-75">
+              <div className="flex items-center gap-1.5 text-[9px] text-zinc-400 font-bold uppercase tracking-wider">
+                <ShieldAlert className="h-3 w-3 text-zinc-500" />
+                <span>reCAPTCHA</span>
+              </div>
+              <span className="text-[7px] text-zinc-400 font-medium">Privacy • Terms</span>
+            </div>
           </div>
 
           {/* Form Action Button */}
@@ -303,6 +496,117 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
           </div>
         </form>
       </div>
+
+      {/* Captcha Challenge Modal */}
+      {showChallenge && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn" id="captcha-modal-overlay">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white w-full max-w-[340px] rounded-xl border border-zinc-200 shadow-2xl overflow-hidden flex flex-col transition-all"
+            id="captcha-modal-card"
+          >
+            {/* Modal Header */}
+            <div className="bg-blue-600 p-5 text-white space-y-1">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-blue-100">
+                {language === "hi"
+                  ? "सत्यापन आवश्यक है"
+                  : language === "or"
+                  ? "ଯାଞ୍ଚ ଆବଶ୍ୟକ"
+                  : "Verification Required"}
+              </p>
+              <h3 className="text-sm font-semibold leading-snug">
+                {language === "hi" ? "सभी बक्से चुनें जिनमें" : language === "or" ? "ସମସ୍ତ ଚଉକି ଚୟନ କରନ୍ତୁ ଯେଉଁଥିରେ" : "Select all squares with"}
+              </h3>
+              <p className="text-lg font-extrabold tracking-tight underline decoration-2 underline-offset-2">
+                {getCategoryLabel(targetCategory)}
+              </p>
+            </div>
+
+            {/* Error Message */}
+            {captchaError && (
+              <div className="bg-red-50 border-y border-red-100 text-red-600 text-xs text-center py-2 px-3 font-semibold animate-pulse">
+                {captchaError}
+              </div>
+            )}
+
+            {/* 3x3 Grid */}
+            <div className="p-3 bg-zinc-100 grid grid-cols-3 gap-1.5" id="captcha-grid-container">
+              {captchaGrid.map((item, index) => {
+                const IconComp = item.icon;
+                const isSelected = selectedTiles.includes(index);
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => toggleTile(index)}
+                    className={`aspect-square bg-white border-2 rounded-lg flex flex-col items-center justify-center relative transition-all cursor-pointer group ${
+                      isSelected
+                        ? "border-blue-600 ring-2 ring-blue-100 scale-95"
+                        : "border-zinc-200 hover:border-zinc-300"
+                    }`}
+                  >
+                    <IconComp
+                      className={`h-8 w-8 transition-all ${
+                        isSelected ? "text-blue-600" : "text-zinc-600 group-hover:text-zinc-800"
+                      }`}
+                    />
+                    
+                    {/* Selected Indicator Checkmark */}
+                    {isSelected && (
+                      <div className="absolute top-1.5 right-1.5 h-4 w-4 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-sm scale-110 animate-fadeIn">
+                        <Check className="h-2.5 w-2.5 stroke-[3px]" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Footer */}
+            <div className="p-3 border-t border-zinc-100 bg-zinc-50 flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={generateCaptcha}
+                  className="p-2 text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100 rounded-lg transition-all cursor-pointer"
+                  title="Refresh Challenge"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => alert(language === "hi" ? "लक्ष्य श्रेणी से मेल खाने वाले सभी चित्रों का चयन करें और फिर सत्यापित करें पर क्लिक करें।" : language === "or" ? "ଲକ୍ଷ୍ୟ ଶ୍ରେଣୀ ସହ ମେଳ ଖାଉଥିବା ସମସ୍ତ ଚିତ୍ର ଚୟନ କରନ୍ତୁ ଏବଂ ଯାଞ୍ଚ କରନ୍ତୁ ଉପରେ କ୍ଲିକ୍ କରନ୍ତୁ।" : "Select all images that match the specified target category, then click Verify.")}
+                  className="p-2 text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100 rounded-lg transition-all cursor-pointer"
+                  title="Help"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowChallenge(false);
+                    setIsCaptchaVerifying(false);
+                  }}
+                  className="px-3 py-1.5 text-[11px] font-bold text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 rounded-md transition-all cursor-pointer"
+                >
+                  {language === "hi" ? "रद्द करें" : language === "or" ? "ବାତିଲ୍" : "Cancel"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCaptchaVerify}
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold px-4 py-1.5 rounded-md shadow-xs hover:shadow-sm transition-all cursor-pointer"
+                >
+                  {language === "hi" ? "सत्यापित करें" : language === "or" ? "ଯାଞ୍ଚ କରନ୍ତୁ" : "Verify"}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

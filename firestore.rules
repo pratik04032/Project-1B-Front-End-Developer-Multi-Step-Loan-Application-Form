@@ -32,6 +32,10 @@ service cloud.firestore {
         isAdmin()
       );
       allow delete: if isAdmin();
+
+      match /adminNotes/{noteId} {
+        allow read, write: if isAdmin();
+      }
     }
 
     match /defaulters/{identityId} {

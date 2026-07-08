@@ -103,6 +103,40 @@
         "isDefaulter",
         "reason"
       ]
+    },
+    "AdminNote": {
+      "title": "AdminNote",
+      "description": "A private note or comment appended to an application by an administrator.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique ID of the note."
+        },
+        "applicationId": {
+          "type": "string",
+          "description": "The associated loan application ID."
+        },
+        "note": {
+          "type": "string",
+          "description": "The private text content of the note."
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "The email or UID of the admin who wrote the note."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of note creation."
+        }
+      },
+      "required": [
+        "id",
+        "applicationId",
+        "note",
+        "createdBy",
+        "createdAt"
+      ]
     }
   },
   "firestore": {
@@ -111,6 +145,12 @@
         "$ref": "#/entities/Application"
       },
       "description": "Contains submitted and in-progress loan applications."
+    },
+    "applications/{applicationId}/adminNotes/{noteId}": {
+      "schema": {
+        "$ref": "#/entities/AdminNote"
+      },
+      "description": "Private notes and comments appended to a loan application by administrators."
     },
     "defaulters/{identityId}": {
       "schema": {

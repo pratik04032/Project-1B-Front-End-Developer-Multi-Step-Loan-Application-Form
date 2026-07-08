@@ -9,7 +9,8 @@ import {
   collection, 
   updateDoc, 
   query, 
-  where 
+  where,
+  deleteDoc
 } from "firebase/firestore";
 import firebaseConfig from "../../firebase-applet-config.json";
 
@@ -276,6 +277,63 @@ export async function getUserApplication(email: string) {
     console.error("Error getting user application:", error);
     checkAndHandleError(error, OperationType.LIST, "applications");
     return null;
+  }
+}
+
+// Get all private admin notes for a specific application
+export async function getAdminNotes(applicationId: string) {
+  try {
+    const notesRef = collection(db, "applications", applicationId, "adminNotes");
+    const snap = await getDocs(notesRef);
+    const list: any[] = [];
+    snap.forEach(docSnap => {
+      list.push({ id: docSnap.id, ...docSnap.data() });
+    });
+    // Sort by createdAt descending (newest notes first)
+    list.sort((a, b) => {
+      const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dbVal = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dbVal - da;
+    });
+    return list;
+  } catch (error) {
+    console.error("Error getting admin notes:", error);
+    checkAndHandleError(error, OperationType.LIST, `applications/${applicationId}/adminNotes`);
+    return [];
+  }
+}
+
+// Add a private admin note to an application
+export async function addAdminNote(applicationId: string, note: string, adminEmail: string) {
+  try {
+    const notesRef = collection(db, "applications", applicationId, "adminNotes");
+    const newNoteDoc = doc(notesRef); // auto-generate ID
+    const noteData = {
+      id: newNoteDoc.id,
+      applicationId,
+      note,
+      createdBy: adminEmail || "Admin",
+      createdAt: new Date().toISOString()
+    };
+    await setDoc(newNoteDoc, noteData);
+    return { success: true, note: noteData };
+  } catch (error) {
+    console.error("Error adding admin note:", error);
+    checkAndHandleError(error, OperationType.WRITE, `applications/${applicationId}/adminNotes`);
+    return { success: false, error };
+  }
+}
+
+// Delete a private admin note
+export async function deleteAdminNote(applicationId: string, noteId: string) {
+  try {
+    const noteRef = doc(db, "applications", applicationId, "adminNotes", noteId);
+    await deleteDoc(noteRef);
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting admin note:", error);
+    checkAndHandleError(error, OperationType.DELETE, `applications/${applicationId}/adminNotes/${noteId}`);
+    return { success: false, error };
   }
 }
 

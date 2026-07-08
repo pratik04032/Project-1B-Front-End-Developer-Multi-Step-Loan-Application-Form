@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { setDefaulterStatus, updateApplicationStatus } from "../lib/firebase";
+import { 
+  setDefaulterStatus, 
+  updateApplicationStatus,
+  getAdminNotes,
+  addAdminNote,
+  deleteAdminNote
+} from "../lib/firebase";
 import { 
   ArrowLeft, 
   Search, 
@@ -12,7 +18,12 @@ import {
   Calendar,
   X,
   RefreshCw,
-  Radio
+  Radio,
+  MessageSquare,
+  Plus,
+  Trash2,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 
 interface AdminDashboardProps {
@@ -20,13 +31,15 @@ interface AdminDashboardProps {
   isLoading: boolean;
   onRefresh: () => void;
   onClose: () => void;
+  currentUser?: { email: string; role: string } | null;
 }
 
 export default function AdminDashboard({
   applications,
   isLoading,
   onRefresh,
-  onClose
+  onClose,
+  currentUser
 }: AdminDashboardProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -36,6 +49,69 @@ export default function AdminDashboard({
   // Bulk selection states
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkUpdating, setBulkUpdating] = useState(false);
+
+  // Private Admin Notes states
+  const [expandedAppId, setExpandedAppId] = useState<string | null>(null);
+  const [notes, setNotes] = useState<Record<string, any[]>>({});
+  const [loadingNotes, setLoadingNotes] = useState<Record<string, boolean>>({});
+  const [newNoteTexts, setNewNoteTexts] = useState<Record<string, string>>({});
+  const [addingNote, setAddingNote] = useState<Record<string, boolean>>({});
+  const [deletingNoteId, setDeletingNoteId] = useState<string | null>(null);
+
+  const loadNotesForApp = async (appId: string) => {
+    setLoadingNotes(prev => ({ ...prev, [appId]: true }));
+    try {
+      const appNotes = await getAdminNotes(appId);
+      setNotes(prev => ({ ...prev, [appId]: appNotes }));
+    } catch (err) {
+      console.error("Failed to load notes for application:", appId, err);
+    } finally {
+      setLoadingNotes(prev => ({ ...prev, [appId]: false }));
+    }
+  };
+
+  const handleToggleExpand = async (appId: string) => {
+    if (expandedAppId === appId) {
+      setExpandedAppId(null);
+    } else {
+      setExpandedAppId(appId);
+      await loadNotesForApp(appId);
+    }
+  };
+
+  const handleAddNote = async (appId: string) => {
+    const text = newNoteTexts[appId]?.trim();
+    if (!text) return;
+
+    setAddingNote(prev => ({ ...prev, [appId]: true }));
+    try {
+      const adminEmail = currentUser?.email || "admin@lendswift.com";
+      const res = await addAdminNote(appId, text, adminEmail);
+      if (res.success) {
+        setNewNoteTexts(prev => ({ ...prev, [appId]: "" }));
+        await loadNotesForApp(appId);
+      }
+    } catch (err) {
+      console.error("Failed to add note:", err);
+    } finally {
+      setAddingNote(prev => ({ ...prev, [appId]: false }));
+    }
+  };
+
+  const handleDeleteNote = async (appId: string, noteId: string) => {
+    if (!window.confirm("Are you sure you want to delete this private note?")) return;
+    setDeletingNoteId(noteId);
+    try {
+      const res = await deleteAdminNote(appId, noteId);
+      if (res.success) {
+        await loadNotesForApp(appId);
+      }
+    } catch (err) {
+      console.error("Failed to delete note:", err);
+    } finally {
+      setDeletingNoteId(null);
+    }
+  };
 
   // Sync selectedIds with valid application list in case an application is deleted or refreshed out
   useEffect(() => {
@@ -376,144 +452,265 @@ export default function AdminDashboard({
               </thead>
               <tbody className="divide-y divide-zinc-100">
                 {filteredApps.map((app) => (
-                  <tr key={app.id} className={`hover:bg-zinc-50/60 transition-colors ${selectedIds.includes(app.id) ? "bg-purple-50/35" : ""}`}>
-                    <td className="py-4 px-4 text-center w-12">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(app.id)}
-                        onChange={() => handleToggleSelect(app.id)}
-                        className="rounded border-zinc-300 text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer"
-                      />
-                    </td>
-                    {/* 1. Name and reference ID */}
-                    <td className="py-4 px-4 space-y-1">
-                      <p className="font-semibold text-zinc-950 text-sm">{app.fullName || "Unnamed Applicant"}</p>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-[10px] bg-zinc-100 border border-zinc-200 px-1.5 py-0.5 rounded text-zinc-600">
-                          {app.id}
-                        </span>
-                        {app.createdAt && (
-                          <span className="text-[10px] text-zinc-400 flex items-center gap-0.5">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(app.createdAt).toLocaleDateString()}
+                  <React.Fragment key={app.id}>
+                    <tr className={`hover:bg-zinc-50/60 transition-colors ${selectedIds.includes(app.id) ? "bg-purple-50/35" : ""}`}>
+                      <td className="py-4 px-4 text-center w-12">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(app.id)}
+                          onChange={() => handleToggleSelect(app.id)}
+                          className="rounded border-zinc-300 text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer"
+                        />
+                      </td>
+                      {/* 1. Name and reference ID */}
+                      <td className="py-4 px-4 space-y-1">
+                        <p className="font-semibold text-zinc-950 text-sm">{app.fullName || "Unnamed Applicant"}</p>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] bg-zinc-100 border border-zinc-200 px-1.5 py-0.5 rounded text-zinc-600">
+                            {app.id}
+                          </span>
+                          {app.createdAt && (
+                            <span className="text-[10px] text-zinc-400 flex items-center gap-0.5">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(app.createdAt).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* 2. Loan details */}
+                      <td className="py-4 px-4 space-y-1">
+                        <p className="font-semibold text-zinc-900">{app.loanType} Loan</p>
+                        <p className="font-mono text-[11px] text-zinc-500">
+                          {formatCurrency(app.loanAmount)} ({app.loanTenure} mo)
+                        </p>
+                      </td>
+
+                      {/* 3. KYC registries */}
+                      <td className="py-4 px-4 space-y-1 font-mono text-[11px] text-zinc-600">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-zinc-400 text-[10px] uppercase font-bold w-12">PAN:</span>
+                          <span className="text-zinc-900 font-semibold">{app.panNumber || "N/A"}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-zinc-400 text-[10px] uppercase font-bold w-12">Aadhaar:</span>
+                          <span className="text-zinc-900 font-semibold">{app.aadhaarNumber || "N/A"}</span>
+                        </div>
+                      </td>
+
+                      {/* 4. Registry Status */}
+                      <td className="py-4 px-4">
+                        {app.isDefaulter ? (
+                          <div className="space-y-1">
+                            <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 font-bold px-2 py-0.5 rounded uppercase text-[9px] tracking-wider">
+                              <ShieldAlert className="h-3 w-3" />
+                              DEFAULTER
+                            </span>
+                            <p className="text-[9px] text-red-500 italic max-w-[150px] truncate" title={app.reason}>
+                              {app.reason || "Past repayment failure"}
+                            </p>
+                          </div>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 border border-green-200 font-bold px-2 py-0.5 rounded uppercase text-[9px] tracking-wider">
+                            <CheckCircle className="h-3 w-3" />
+                            CLEAN RECORD
                           </span>
                         )}
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* 2. Loan details */}
-                    <td className="py-4 px-4 space-y-1">
-                      <p className="font-semibold text-zinc-900">{app.loanType} Loan</p>
-                      <p className="font-mono text-[11px] text-zinc-500">
-                        {formatCurrency(app.loanAmount)} ({app.loanTenure} mo)
-                      </p>
-                    </td>
-
-                    {/* 3. KYC registries */}
-                    <td className="py-4 px-4 space-y-1 font-mono text-[11px] text-zinc-600">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-zinc-400 text-[10px] uppercase font-bold w-12">PAN:</span>
-                        <span className="text-zinc-900 font-semibold">{app.panNumber || "N/A"}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-zinc-400 text-[10px] uppercase font-bold w-12">Aadhaar:</span>
-                        <span className="text-zinc-900 font-semibold">{app.aadhaarNumber || "N/A"}</span>
-                      </div>
-                    </td>
-
-                    {/* 4. Registry Status */}
-                    <td className="py-4 px-4">
-                      {app.isDefaulter ? (
-                        <div className="space-y-1">
-                          <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200 font-bold px-2 py-0.5 rounded uppercase text-[9px] tracking-wider">
-                            <ShieldAlert className="h-3 w-3" />
-                            DEFAULTER
+                      {/* 5. Application Status */}
+                      <td className="py-4 px-4">
+                        {app.status === "APPROVED" ? (
+                          <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2.5 py-1 rounded uppercase text-[9px] tracking-wider">
+                            <CheckCircle className="h-3 w-3 text-emerald-600" />
+                            APPROVED
                           </span>
-                          <p className="text-[9px] text-red-500 italic max-w-[150px] truncate" title={app.reason}>
-                            {app.reason || "Past repayment failure"}
-                          </p>
-                        </div>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 border border-green-200 font-bold px-2 py-0.5 rounded uppercase text-[9px] tracking-wider">
-                          <CheckCircle className="h-3 w-3" />
-                          CLEAN RECORD
-                        </span>
-                      )}
-                    </td>
+                        ) : app.status === "REJECTED" ? (
+                          <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 border border-rose-200 font-bold px-2.5 py-1 rounded uppercase text-[9px] tracking-wider">
+                            <X className="h-3 w-3 text-rose-600" />
+                            REJECTED
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 font-bold px-2.5 py-1 rounded uppercase text-[9px] tracking-wider">
+                            <TrendingUp className="h-3 w-3 text-amber-600" />
+                            {app.status || "PRE-APPROVED"}
+                          </span>
+                        )}
+                      </td>
 
-                    {/* 5. Application Status */}
-                    <td className="py-4 px-4">
-                      {app.status === "APPROVED" ? (
-                        <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2.5 py-1 rounded uppercase text-[9px] tracking-wider">
-                          <CheckCircle className="h-3 w-3 text-emerald-600" />
-                          APPROVED
-                        </span>
-                      ) : app.status === "REJECTED" ? (
-                        <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 border border-rose-200 font-bold px-2.5 py-1 rounded uppercase text-[9px] tracking-wider">
-                          <X className="h-3 w-3 text-rose-600" />
-                          REJECTED
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 font-bold px-2.5 py-1 rounded uppercase text-[9px] tracking-wider">
-                          <TrendingUp className="h-3 w-3 text-amber-600" />
-                          {app.status || "PRE-APPROVED"}
-                        </span>
-                      )}
-                    </td>
-
-                    {/* 6. Actions */}
-                    <td className="py-4 px-4 text-right">
-                      <div className="flex flex-col sm:flex-row items-center justify-end gap-2.5">
-                        {/* Status Update Buttons */}
-                        <div className="flex items-center gap-1 bg-zinc-100 border border-zinc-200 p-1 rounded-lg">
+                      {/* 6. Actions */}
+                      <td className="py-4 px-4 text-right">
+                        <div className="flex flex-col sm:flex-row items-center justify-end gap-2">
+                          {/* Private Notes Toggle Button */}
                           <button
-                            onClick={() => handleUpdateStatus(app.id, "APPROVED")}
-                            disabled={statusUpdatingId === app.id}
-                            className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${
-                              app.status === "APPROVED"
-                                ? "bg-emerald-600 text-white shadow-xs"
-                                : "text-zinc-600 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-40"
+                            type="button"
+                            onClick={() => handleToggleExpand(app.id)}
+                            className={`text-[10px] font-bold px-2.5 py-1.5 rounded transition-all cursor-pointer inline-flex items-center gap-1 border ${
+                              expandedAppId === app.id
+                                ? "bg-zinc-800 text-white border-zinc-900 shadow-xs"
+                                : "bg-white text-zinc-700 hover:bg-zinc-50 border-zinc-200"
                             }`}
                           >
-                            Approve
+                            <MessageSquare className="h-3 w-3" />
+                            <span>Notes</span>
+                            {expandedAppId === app.id ? (
+                              <ChevronUp className="h-3 w-3" />
+                            ) : (
+                              <ChevronDown className="h-3 w-3" />
+                            )}
                           </button>
+
+                          {/* Status Update Buttons */}
+                          <div className="flex items-center gap-1 bg-zinc-100 border border-zinc-200 p-1 rounded-lg">
+                            <button
+                              onClick={() => handleUpdateStatus(app.id, "APPROVED")}
+                              disabled={statusUpdatingId === app.id}
+                              className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                                app.status === "APPROVED"
+                                  ? "bg-emerald-600 text-white shadow-xs"
+                                  : "text-zinc-600 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-40"
+                              }`}
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleUpdateStatus(app.id, "REJECTED")}
+                              disabled={statusUpdatingId === app.id}
+                              className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                                app.status === "REJECTED"
+                                  ? "bg-rose-600 text-white shadow-xs"
+                                  : "text-zinc-600 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-40"
+                              }`}
+                            >
+                              Reject
+                            </button>
+                          </div>
+
+                          {/* Defaulter Action Trigger */}
                           <button
-                            onClick={() => handleUpdateStatus(app.id, "REJECTED")}
-                            disabled={statusUpdatingId === app.id}
-                            className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all cursor-pointer ${
-                              app.status === "REJECTED"
-                                ? "bg-rose-600 text-white shadow-xs"
-                                : "text-zinc-600 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-40"
+                            onClick={() => handleToggleDefaulter(app)}
+                            disabled={updatingId === app.id}
+                            className={`text-[10px] font-bold px-2.5 py-1.5 rounded transition-all cursor-pointer inline-flex items-center gap-1 ${
+                              app.isDefaulter
+                                ? "bg-green-50 text-green-700 hover:bg-green-100 border border-green-200"
+                                : "bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
                             }`}
                           >
-                            Reject
+                            {updatingId === app.id ? (
+                              <>
+                                <span className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full"></span>
+                                <span>Updating...</span>
+                              </>
+                            ) : app.isDefaulter ? (
+                              <span>Clear</span>
+                            ) : (
+                              <span>Flag Defaulter</span>
+                            )}
                           </button>
                         </div>
+                      </td>
+                    </tr>
 
-                        {/* Defaulter Action Trigger */}
-                        <button
-                          onClick={() => handleToggleDefaulter(app)}
-                          disabled={updatingId === app.id}
-                          className={`text-[10px] font-bold px-2.5 py-1.5 rounded transition-all cursor-pointer inline-flex items-center gap-1 ${
-                            app.isDefaulter
-                              ? "bg-green-50 text-green-700 hover:bg-green-100 border border-green-200"
-                              : "bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
-                          }`}
-                        >
-                          {updatingId === app.id ? (
-                            <>
-                              <span className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full"></span>
-                              <span>Updating...</span>
-                            </>
-                          ) : app.isDefaulter ? (
-                            <span>Mark Clear</span>
-                          ) : (
-                            <span>Flag Defaulter</span>
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                    {/* Private Notes Expandable Row */}
+                    {expandedAppId === app.id && (
+                      <tr className="bg-zinc-50/70 select-none border-b border-zinc-200">
+                        <td colSpan={7} className="p-4">
+                          <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-xs space-y-4 text-left max-w-4xl mx-auto">
+                            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+                              <h4 className="text-xs font-bold text-zinc-900 uppercase tracking-wider flex items-center gap-1.5">
+                                <MessageSquare className="h-4 w-4 text-purple-600" />
+                                <span>Private Notes & Comments</span>
+                                <span className="font-mono text-[10px] text-zinc-400 font-normal normal-case">
+                                  (Visible only to administrators)
+                                </span>
+                              </h4>
+                              <button
+                                type="button"
+                                onClick={() => loadNotesForApp(app.id)}
+                                className="text-zinc-400 hover:text-zinc-600 transition-colors p-1 rounded"
+                                title="Refresh comments"
+                              >
+                                <RefreshCw className={`h-3.5 w-3.5 ${loadingNotes[app.id] ? "animate-spin text-purple-600" : ""}`} />
+                              </button>
+                            </div>
+
+                            {/* Existing Notes list */}
+                            {loadingNotes[app.id] && (!notes[app.id] || notes[app.id].length === 0) ? (
+                              <div className="py-6 text-center text-zinc-400 text-xs flex items-center justify-center gap-1.5 font-medium">
+                                <span className="animate-spin h-3.5 w-3.5 border-2 border-purple-600 border-t-transparent rounded-full"></span>
+                                <span>Retrieving secured notes...</span>
+                              </div>
+                            ) : !notes[app.id] || notes[app.id].length === 0 ? (
+                              <div className="py-6 text-center border border-dashed border-zinc-100 rounded-lg text-zinc-400 text-xs">
+                                No private notes have been appended to this application yet.
+                              </div>
+                            ) : (
+                              <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                                {notes[app.id].map((note) => (
+                                  <div key={note.id} className="bg-zinc-50 border border-zinc-100 rounded-lg p-3 flex justify-between items-start gap-3">
+                                    <div className="space-y-1">
+                                      <p className="text-xs text-zinc-900 leading-relaxed font-medium whitespace-pre-wrap">
+                                        {note.note}
+                                      </p>
+                                      <div className="flex items-center gap-2 text-[10px] text-zinc-400 font-medium font-mono">
+                                        <span className="text-purple-600 font-semibold">{note.createdBy}</span>
+                                        <span>•</span>
+                                        <span>
+                                          {note.createdAt ? new Date(note.createdAt).toLocaleString() : "Just now"}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteNote(app.id, note.id)}
+                                      disabled={deletingNoteId === note.id}
+                                      className="text-zinc-400 hover:text-red-600 transition-colors cursor-pointer shrink-0 p-1"
+                                      title="Delete note"
+                                    >
+                                      {deletingNoteId === note.id ? (
+                                        <span className="animate-spin h-3.5 w-3.5 border-2 border-red-600 border-t-transparent rounded-full block"></span>
+                                      ) : (
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      )}
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Add Note Input Form */}
+                            <div className="space-y-2 pt-2 border-t border-zinc-100">
+                              <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                Append Private Note
+                              </label>
+                              <div className="flex gap-2">
+                                <textarea
+                                  placeholder="Type administrative review comment, credit decision notes, verification status updates..."
+                                  value={newNoteTexts[app.id] || ""}
+                                  onChange={(e) => setNewNoteTexts(prev => ({ ...prev, [app.id]: e.target.value }))}
+                                  rows={2}
+                                  className="flex-1 p-2.5 bg-zinc-50 border border-zinc-200 rounded-lg text-xs font-sans text-zinc-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all resize-none"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleAddNote(app.id)}
+                                  disabled={addingNote[app.id] || !(newNoteTexts[app.id] || "").trim()}
+                                  className="px-4 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-200 text-white disabled:text-zinc-400 font-bold text-xs rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 h-auto shrink-0 shadow-xs"
+                                >
+                                  {addingNote[app.id] ? (
+                                    <span className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full"></span>
+                                  ) : (
+                                    <Plus className="h-3.5 w-3.5" />
+                                  )}
+                                  <span>Append Note</span>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>

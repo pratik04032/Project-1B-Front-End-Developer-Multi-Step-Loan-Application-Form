@@ -795,6 +795,7 @@ export default function App() {
             isLoading={isAdminLoading}
             onRefresh={loadAdminApplications}
             onClose={handleLogout}
+            currentUser={currentUser}
           />
         ) : globalSuccess ? (
           <div className="bg-white border border-zinc-200 rounded-xl p-8 text-center max-w-xl mx-auto space-y-6 my-12 animate-fadeIn" id="success-portal">

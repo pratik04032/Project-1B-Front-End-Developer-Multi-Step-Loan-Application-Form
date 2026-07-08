@@ -1,6 +1,6 @@
 {
-  "name": "UtkalCred",
-  "description": "A production-grade digital multi-step loan application form with real-time validations, state persistence, image compression, and simulated KYC checks.",
+  "name": "UtkalCred Digital Lending",
+  "description": "Secure multi-step digital loan application portal for UtkalCred & LendSwift, featuring real-time validations, secure document processing, interactive calculators, and compliance verification.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
