@@ -37,6 +37,8 @@ export default function Step7Documents({
   // Local state for simulated uploads
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [activeUploadKey, setActiveUploadKey] = useState<string | null>(null);
+  const [previewFile, setPreviewFile] = useState<UploadedFile | null>(null);
+  const [previewRotation, setPreviewRotation] = useState<number>(0);
 
   // E-Signature Drawing states
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -521,11 +523,16 @@ export default function Step7Documents({
                     return (
                       <div
                         key={file.id}
-                        className="flex items-center gap-2.5 p-2.5 border border-slate-100 bg-slate-50/50 rounded-xl relative group hover:bg-slate-50 transition-all overflow-hidden"
+                        onClick={() => {
+                          setPreviewFile(file);
+                          setPreviewRotation(0);
+                        }}
+                        className="flex items-center gap-2.5 p-2.5 border border-slate-200 bg-slate-50/50 rounded-xl relative group hover:bg-slate-50 hover:border-blue-300 transition-all overflow-hidden cursor-pointer"
+                        title={language === "hi" ? "पूर्वावलोकन के लिए क्लिक करें" : language === "or" ? "ପୂର୍ବାବଲୋକନ ପାଇଁ କ୍ଲିକ୍ କରନ୍ତୁ" : "Click to preview document"}
                       >
                         {/* Preview icon/thumbnail */}
                         {isPDF ? (
-                          <div className="flex h-10 w-10 items-center justify-center bg-red-50 text-red-600 rounded-lg shrink-0">
+                          <div className="flex h-10 w-10 items-center justify-center bg-red-50 text-red-600 rounded-lg shrink-0 border border-red-100">
                             <span className="text-[10px] font-bold">PDF</span>
                           </div>
                         ) : (
@@ -538,7 +545,7 @@ export default function Step7Documents({
                         )}
 
                         <div className="flex-1 min-w-0 pr-6">
-                          <p className="text-xs font-medium text-slate-800 truncate" title={file.name}>
+                          <p className="text-xs font-semibold text-slate-800 truncate" title={file.name}>
                             {file.name}
                           </p>
                           <div className="flex flex-col gap-0.5 mt-0.5">
@@ -557,7 +564,10 @@ export default function Step7Documents({
                         {/* Delete Button */}
                         <button
                           type="button"
-                          onClick={() => deleteFile(doc.key, file.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteFile(doc.key, file.id);
+                          }}
                           className="absolute right-2 top-2 p-1 text-slate-400 hover:text-red-600 bg-white rounded-full shadow border border-slate-100 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
                           title="Delete File"
                         >
@@ -660,6 +670,98 @@ export default function Step7Documents({
           </p>
         )}
       </div>
+
+      {/* Lightbox Document Preview Modal */}
+      {previewFile && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-slate-100 animate-scaleUp">
+            
+            {/* Modal Header */}
+            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <div>
+                <h3 className="font-bold text-slate-800 text-sm md:text-base flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-blue-600 inline-block"></span>
+                  {previewFile.name}
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  {language === "hi" ? "आकार: " : language === "or" ? "ଆକାର: " : "Size: "} {formatBytes(previewFile.size)} | {previewFile.type}
+                </p>
+              </div>
+              
+              <button
+                type="button"
+                onClick={() => setPreviewFile(null)}
+                className="p-1.5 hover:bg-slate-200 text-slate-400 hover:text-slate-700 rounded-full transition-all cursor-pointer"
+                title="Close"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Body / Viewer */}
+            <div className="p-6 bg-slate-900 flex-1 overflow-auto flex items-center justify-center min-h-[40vh] relative select-none">
+              {previewFile.type === "application/pdf" ? (
+                <div className="w-full h-full flex flex-col gap-4 items-center justify-center">
+                  <iframe
+                    src={previewFile.base64}
+                    title="PDF Preview"
+                    className="w-full h-[55vh] rounded-xl bg-white border border-slate-800"
+                  />
+                  <a
+                    href={previewFile.base64}
+                    download={previewFile.name}
+                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition-all border border-slate-700"
+                  >
+                    <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    {language === "hi" ? "दस्तावेज़ डाउनलोड करें" : language === "or" ? "ଦସ୍ତାବେଜ ଡାଉନଲୋଡ୍ କରନ୍ତୁ" : "Download Document"}
+                  </a>
+                </div>
+              ) : (
+                <div className="relative flex flex-col items-center justify-center">
+                  <img
+                    src={previewFile.base64}
+                    alt="Document Full Preview"
+                    referrerPolicy="no-referrer"
+                    className="max-w-full max-h-[55vh] object-contain rounded-xl shadow-lg transition-transform duration-200"
+                    style={{ transform: `rotate(${previewRotation}deg)` }}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer Controls */}
+            <div className="p-4 border-t border-slate-100 flex justify-between items-center bg-slate-50">
+              {previewFile.type !== "application/pdf" ? (
+                <button
+                  type="button"
+                  onClick={() => setPreviewRotation((prev) => (prev + 90) % 360)}
+                  className="px-4 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                >
+                  <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 15H19" />
+                  </svg>
+                  {language === "hi" ? "दस्तावेज़ घुमाएँ" : language === "or" ? "ଘୂର୍ଣ୍ଣନ କରନ୍ତୁ" : "Rotate 90°"}
+                </button>
+              ) : (
+                <div />
+              )}
+              
+              <button
+                type="button"
+                onClick={() => setPreviewFile(null)}
+                className="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl transition-all shadow-md cursor-pointer"
+              >
+                {language === "hi" ? "बंद करें" : language === "or" ? "ବନ୍ଦ କରନ୍ତୁ" : "Close"}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }

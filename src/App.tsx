@@ -21,7 +21,7 @@ import { Language } from "./utils/translations";
 import { Globe, Sun, Moon, Sparkles, Printer, ShieldAlert, Search, Users, CheckCircle, AlertTriangle, ArrowLeft, LogOut } from "lucide-react";
 import { useTheme } from "./context/ThemeContext";
 import { validateAadhaar } from "./utils/validators";
-import { saveApplication, checkIfDefaulter, getAllApplications, setDefaulterStatus } from "./lib/firebase";
+import { saveApplication, checkIfDefaulter, getAllApplications, setDefaulterStatus, getUserApplication } from "./lib/firebase";
 
 
 // Import step components
@@ -82,6 +82,36 @@ export default function App() {
       setIsAdminView(currentUser.role === "admin");
     } else {
       setIsAdminView(false);
+    }
+  }, [currentUser]);
+
+  // Load existing application/draft from Firestore on login
+  useEffect(() => {
+    if (currentUser && currentUser.role === "applicant") {
+      const loadUserApplication = async () => {
+        try {
+          const app = await getUserApplication(currentUser.email);
+          if (app) {
+            setToastMessage("Synced existing application from secure cloud database!");
+            setFormState(app);
+            if (app.status === "APPROVED" || app.status === "REJECTED" || app.status === "PRE-APPROVED") {
+              setSuccessRefId(app.id);
+              setGlobalSuccess(true);
+            }
+            setTimeout(() => setToastMessage(""), 4000);
+          } else {
+            // Auto-prefill name and email from authenticated user info
+            setFormState(prev => ({
+              ...prev,
+              email: prev.email || currentUser.email || "",
+              fullName: prev.fullName || currentUser.displayName || ""
+            }));
+          }
+        } catch (error) {
+          console.error("Failed to load user application from Firestore:", error);
+        }
+      };
+      loadUserApplication();
     }
   }, [currentUser]);
 
@@ -294,7 +324,9 @@ export default function App() {
       fathersName: "Sarat Kumar Jena",
       mothersName: "Sasmita Jena",
       email: "pratik.jena@example.com",
+      emailVerified: true,
       mobileNumber: "9876543210",
+      mobileVerified: true,
       alternateMobile: "8765432109",
 
       panNumber: "ABCPK1234F",

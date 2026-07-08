@@ -33,6 +33,16 @@ export default function AdminDashboard({
   const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
   const [liveUpdates, setLiveUpdates] = useState(false);
 
+  // Bulk selection states
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkUpdating, setBulkUpdating] = useState(false);
+
+  // Sync selectedIds with valid application list in case an application is deleted or refreshed out
+  useEffect(() => {
+    const validIds = applications.map(app => app.id);
+    setSelectedIds(prev => prev.filter(id => validIds.includes(id)));
+  }, [applications]);
+
   // Periodic polling for Live Updates
   useEffect(() => {
     if (!liveUpdates) return;
@@ -56,6 +66,48 @@ export default function AdminDashboard({
       console.error("Failed to update status:", err);
     } finally {
       setStatusUpdatingId(null);
+    }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = () => {
+    const allFilteredIds = filteredApps.map(app => app.id);
+    const allSelected = allFilteredIds.length > 0 && allFilteredIds.every(id => selectedIds.includes(id));
+    if (allSelected) {
+      // Deselect all filtered apps
+      setSelectedIds(prev => prev.filter(id => !allFilteredIds.includes(id)));
+    } else {
+      // Select all filtered apps
+      setSelectedIds(prev => {
+        const newSelection = [...prev];
+        allFilteredIds.forEach(id => {
+          if (!newSelection.includes(id)) {
+            newSelection.push(id);
+          }
+        });
+        return newSelection;
+      });
+    }
+  };
+
+  const handleBulkStatusUpdate = async (newStatus: "APPROVED" | "REJECTED") => {
+    if (selectedIds.length === 0) return;
+    setBulkUpdating(true);
+    try {
+      await Promise.all(
+        selectedIds.map(id => updateApplicationStatus(id, newStatus))
+      );
+      setSelectedIds([]);
+      onRefresh();
+    } catch (err) {
+      console.error("Failed to update status in bulk:", err);
+    } finally {
+      setBulkUpdating(false);
     }
   };
   
@@ -239,6 +291,56 @@ export default function AdminDashboard({
           />
         </div>
 
+        {/* Bulk Actions Menu Banner */}
+        {selectedIds.length > 0 && (
+          <div className="bg-purple-50/90 border border-purple-200 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 animate-fadeIn">
+            <div className="flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-purple-600 text-white font-mono text-[10px] font-bold">
+                {selectedIds.length}
+              </span>
+              <p className="text-xs font-semibold text-purple-950">
+                Applications Selected for Bulk Actions
+              </p>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                disabled={bulkUpdating}
+                onClick={() => handleBulkStatusUpdate("APPROVED")}
+                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+              >
+                {bulkUpdating ? (
+                  <span className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full"></span>
+                ) : (
+                  <CheckCircle className="h-3.5 w-3.5" />
+                )}
+                <span>Approve Selected</span>
+              </button>
+              <button
+                type="button"
+                disabled={bulkUpdating}
+                onClick={() => handleBulkStatusUpdate("REJECTED")}
+                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 disabled:bg-rose-400 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+              >
+                {bulkUpdating ? (
+                  <span className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full"></span>
+                ) : (
+                  <X className="h-3.5 w-3.5" />
+                )}
+                <span>Reject Selected</span>
+              </button>
+              <button
+                type="button"
+                disabled={bulkUpdating}
+                onClick={() => setSelectedIds([])}
+                className="px-3 py-1.5 bg-white border border-zinc-200 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 text-xs font-semibold rounded-lg transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* LIST TABLE */}
         {isLoading ? (
           <div className="text-center py-12 space-y-3">
@@ -256,6 +358,14 @@ export default function AdminDashboard({
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-zinc-200 bg-zinc-50 text-zinc-400 uppercase tracking-wider text-[10px] font-bold">
+                  <th className="py-3 px-4 w-12 text-center">
+                    <input
+                      type="checkbox"
+                      checked={filteredApps.length > 0 && filteredApps.every(app => selectedIds.includes(app.id))}
+                      onChange={handleSelectAll}
+                      className="rounded border-zinc-300 text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer"
+                    />
+                  </th>
                   <th className="py-3 px-4">Applicant details</th>
                   <th className="py-3 px-4">Loan Details</th>
                   <th className="py-3 px-4">KYC Registries</th>
@@ -266,7 +376,15 @@ export default function AdminDashboard({
               </thead>
               <tbody className="divide-y divide-zinc-100">
                 {filteredApps.map((app) => (
-                  <tr key={app.id} className="hover:bg-zinc-50/60 transition-colors">
+                  <tr key={app.id} className={`hover:bg-zinc-50/60 transition-colors ${selectedIds.includes(app.id) ? "bg-purple-50/35" : ""}`}>
+                    <td className="py-4 px-4 text-center w-12">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(app.id)}
+                        onChange={() => handleToggleSelect(app.id)}
+                        className="rounded border-zinc-300 text-purple-600 focus:ring-purple-500 h-4 w-4 cursor-pointer"
+                      />
+                    </td>
                     {/* 1. Name and reference ID */}
                     <td className="py-4 px-4 space-y-1">
                       <p className="font-semibold text-zinc-950 text-sm">{app.fullName || "Unnamed Applicant"}</p>

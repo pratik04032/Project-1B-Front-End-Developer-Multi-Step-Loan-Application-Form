@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { ShieldAlert, Users, Lock, Mail, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
+import { auth } from "../lib/firebase";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 interface LoginPortalProps {
-  onLogin: (user: { email: string; role: "admin" | "applicant" }) => void;
+  onLogin: (user: { email: string; role: "admin" | "applicant"; displayName?: string; uid?: string }) => void;
   language: string;
 }
 
@@ -14,6 +16,36 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    setIsLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      if (user && user.email) {
+        const email = user.email.toLowerCase();
+        // Identify if the logged-in email is the admin bootstrapped email
+        const isAdmin = email === "pratikkumarjena04@gmail.com" || email === "admin@lendswift.com";
+        onLogin({
+          email,
+          role: isAdmin ? "admin" : "applicant",
+          displayName: user.displayName || undefined,
+          uid: user.uid
+        });
+      }
+    } catch (err: any) {
+      console.error("Google Sign-In failed:", err);
+      setError(
+        err.message?.includes("popup-closed-by-user")
+          ? "Sign-in popup closed before completion."
+          : "Google authentication failed. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -218,6 +250,30 @@ export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
                 <ArrowRight className="h-3.5 w-3.5" />
               </>
             )}
+          </button>
+
+          {/* OR separator */}
+          <div className="relative flex py-2 items-center">
+            <div className="flex-grow border-t border-zinc-150"></div>
+            <span className="flex-shrink mx-4 text-zinc-400 text-[10px] uppercase tracking-wider font-semibold">
+              {language === "hi" ? "या सुरक्षित लॉगिन" : language === "or" ? "କିମ୍ବା ସୁରକ୍ଷିତ ଲଗଇନ୍" : "Or Secure OAuth"}
+            </span>
+            <div className="flex-grow border-t border-zinc-150"></div>
+          </div>
+
+          {/* Google Sign-In Button */}
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={isLoading}
+            className="w-full bg-white hover:bg-zinc-50 text-zinc-700 font-bold py-2.5 px-4 border border-zinc-300 rounded-lg shadow-2xs hover:shadow-xs transition-all text-xs flex items-center justify-center gap-2.5 cursor-pointer"
+          >
+            <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21.35,11.1H12v2.7h5.38C16.88,15.75,14.77,17,12,17c-3.31,0-6-2.69-6-6s2.69-6,6-6c1.47,0,2.81,0.53,3.86,1.4l2.02-2.02C16.14,2.94,14.2,2,12,2C7.03,2,3,6.03,3,11s4.03,9,9,9c4.8,0,8.45-3.38,8.45-8.45A6.9,6.9,0,0,0,21.35,11.1Z" fill="#4285F4"/>
+            </svg>
+            <span>
+              {language === "hi" ? "गूगल के साथ साइन इन करें" : language === "or" ? "ଗୁଗଲ୍ ସହିତ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ" : "Sign in with Google"}
+            </span>
           </button>
 
           {/* Quick-Fill Helper Block */}

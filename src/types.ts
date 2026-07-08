@@ -28,7 +28,9 @@ export interface FormState {
   fathersName: string;
   mothersName: string;
   email: string;
+  emailVerified: boolean;
   mobileNumber: string;
+  mobileVerified: boolean;
   alternateMobile: string;
 
   // Step 3: Identity Verification (KYC)
@@ -105,7 +107,9 @@ export const INITIAL_FORM_STATE: FormState = {
   fathersName: "",
   mothersName: "",
   email: "",
+  emailVerified: false,
   mobileNumber: "",
+  mobileVerified: false,
   alternateMobile: "",
 
   panNumber: "",

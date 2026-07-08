@@ -127,6 +127,8 @@ export function validateStep2(state: FormState): Record<string, string> {
     errors.email = "Email Address is required.";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.email)) {
     errors.email = "Please enter a valid Email Address.";
+  } else if (!state.emailVerified) {
+    errors.email = "Please verify your Email Address via OTP.";
   }
 
   // Mobile Number
@@ -134,6 +136,8 @@ export function validateStep2(state: FormState): Record<string, string> {
     errors.mobileNumber = "Mobile Number is required.";
   } else if (!/^[6-9]\d{9}$/.test(state.mobileNumber)) {
     errors.mobileNumber = "Mobile Number must be 10 digits starting with 6, 7, 8, or 9.";
+  } else if (!state.mobileVerified) {
+    errors.mobileNumber = "Please verify your Mobile Number via OTP.";
   }
 
   // Alternate Mobile

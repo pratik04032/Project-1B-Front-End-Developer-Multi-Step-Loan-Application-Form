@@ -1,11 +1,42 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /applications/{document} {
-      allow read, write: if true;
+    
+    // Global safety net
+    match /{document=**} {
+      allow read, write: if false;
     }
-    match /defaulters/{document} {
-      allow read, write: if true;
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == "pratikkumarjena04@gmail.com" || 
+        request.auth.token.email == "admin@lendswift.com"
+      );
+    }
+
+    match /applications/{applicationId} {
+      allow create: if isSignedIn();
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid || 
+        resource.data.email == request.auth.token.email || 
+        isAdmin()
+      );
+      allow update: if isSignedIn() && (
+        resource.data.userId == request.auth.uid || 
+        resource.data.email == request.auth.token.email || 
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /defaulters/{identityId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
     }
   }
 }

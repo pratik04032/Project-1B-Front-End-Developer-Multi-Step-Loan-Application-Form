@@ -33,6 +33,14 @@
           "type": "string",
           "description": "Type of loan requested."
         },
+        "email": {
+          "type": "string",
+          "description": "The email address of the applicant."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The unique Firebase Authentication user ID."
+        },
         "status": {
           "type": "string",
           "description": "Current processing status of the application."

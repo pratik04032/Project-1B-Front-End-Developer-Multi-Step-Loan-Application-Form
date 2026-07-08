@@ -253,4 +253,30 @@ export async function getAllApplications() {
   }
 }
 
+// Get user's application by email
+export async function getUserApplication(email: string) {
+  try {
+    const q = query(
+      collection(db, "applications"),
+      where("email", "==", email.toLowerCase().trim())
+    );
+    const snap = await getDocs(q);
+    const list: any[] = [];
+    snap.forEach(docSnap => {
+      list.push({ id: docSnap.id, ...docSnap.data() });
+    });
+    // Sort by createdAt descending
+    list.sort((a, b) => {
+      const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dbVal = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dbVal - da;
+    });
+    return list[0] || null; // return the most recent one
+  } catch (error) {
+    console.error("Error getting user application:", error);
+    checkAndHandleError(error, OperationType.LIST, "applications");
+    return null;
+  }
+}
+
 export default app;
