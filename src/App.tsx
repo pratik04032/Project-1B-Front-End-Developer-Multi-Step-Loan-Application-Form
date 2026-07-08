@@ -1,4 +1,5 @@
 import React, { useState, useEffect, startTransition } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { FormState, INITIAL_FORM_STATE } from "./types";
 import {
   isStep6Active,
@@ -41,6 +42,7 @@ export default function App() {
   const { theme, toggleTheme } = useTheme();
   const [formState, setFormState] = useState<FormState>(INITIAL_FORM_STATE);
   const [currentStep, setCurrentStep] = useState(1);
+  const [direction, setDirection] = useState(1);
   const [blurredFields, setBlurredFields] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [globalSuccess, setGlobalSuccess] = useState(false);
@@ -267,6 +269,7 @@ export default function App() {
     }
 
     if (nextStep <= 8) {
+      setDirection(1);
       startTransition(() => {
         setCurrentStep(nextStep);
         setBlurredFields({});
@@ -287,6 +290,7 @@ export default function App() {
     }
 
     if (prevStep >= 1) {
+      setDirection(-1);
       startTransition(() => {
         setCurrentStep(prevStep);
         setBlurredFields({});
@@ -548,11 +552,30 @@ export default function App() {
 
   // Skip specifically to step from review
   const jumpToStep = (step: number) => {
+    setDirection(step > currentStep ? 1 : -1);
     startTransition(() => {
       setCurrentStep(step);
       setBlurredFields({});
       setErrors({});
     });
+  };
+
+  // Animation variants for framer-motion
+  const stepVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 30 : -30,
+      opacity: 0,
+    }),
+    center: {
+      z: 0,
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      z: 0,
+      x: direction < 0 ? 30 : -30,
+      opacity: 0,
+    }),
   };
 
   // Render current step component
@@ -954,9 +977,21 @@ export default function App() {
             )}
 
             {/* STEP WORKSPACE CARD */}
-            <div className="bg-white border border-zinc-200 rounded-xl p-6 md:p-8">
+            <div className="bg-white border border-zinc-200 rounded-xl p-6 md:p-8 overflow-hidden">
               <div id="wizard-title" tabIndex={-1} className="focus:outline-none">
-                {renderStepComponent()}
+                <AnimatePresence mode="wait" custom={direction}>
+                  <motion.div
+                    key={currentStep}
+                    custom={direction}
+                    variants={stepVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                  >
+                    {renderStepComponent()}
+                  </motion.div>
+                </AnimatePresence>
               </div>
 
               {/* ACTION FOOTER */}
