@@ -328,10 +328,10 @@ export default function Step6CoApplicant({
           />
           <label htmlFor="coApplicantConsent" className="text-xs text-slate-600 leading-normal cursor-pointer select-none">
             {language === "hi" 
-              ? "मैं इसके द्वारा पुष्टि करता/करती हूँ कि मैं इस डिजिटल ऋण आवेदन के लिए सह-उधारकर्ता/गारंटर के रूप में जुड़ने के लिए सहमत हूँ। मैं लेंडस्विफ्ट को अपनी क्रेडिट रिपोर्ट (CIBIL/Equifax) प्राप्त करने और समीक्षा करने तथा पैन विवरणों को ऑनलाइन सत्यापित करने के लिए अधिकृत करता हूँ। मैं घोषणा करता हूँ कि प्रदान किए गए विवरण मेरी सर्वोत्तम जानकारी के अनुसार सही हैं।" 
+              ? "मैं इसके द्वारा पुष्टि करता/करती हूँ कि मैं इस डिजिटल ऋण आवेदन के लिए सह-उधारकर्ता/गारंटर के रूप में जुड़ने के लिए सहमत हूँ। मैं उत्कल क्रेड (UtkalCred) को अपनी क्रेडिट रिपोर्ट (CIBIL/Equifax) प्राप्त करने और समीक्षा करने तथा पैन विवरणों को ऑनलाइन सत्यापित करने के लिए अधिकृत करता हूँ। मैं घोषणा करता हूँ कि प्रदान किए गए विवरण मेरी सर्वोत्तम जानकारी के अनुसार सही हैं।" 
               : language === "or" 
-              ? "ମୁଁ ଏତଦ୍ୱାରା ନିଶ୍ଚିତ କରୁଛି ଯେ ମୁଁ ଏହି ଋଣ ଆବେଦନ ପାଇଁ ସହ-ଋଣଗ୍ରହିତା / ଗାରେଣ୍ଟର ଭାବରେ ଯୋଡି ହେବାକୁ ସମ୍ମତି ପ୍ରଦାନ କରୁଛି। ମୋର କ୍ରେଡିଟ୍ ରିପୋର୍ଟ (CIBIL/Equifax) ଯାଞ୍ଚ କରିବାକୁ ଏବଂ ମୋର PAN ବିବରଣୀ ସତ୍ୟାପନ କରିବାକୁ ମୁଁ ଲେଣ୍ଡସ୍ୱିଫ୍ଟକୁ ଅଧିକାର ଦେଉଛି। ମୋର ଜ୍ଞାନ ଅନୁଯାୟୀ ପ୍ରଦାନ କରାଯାଇଥିବା ସମସ୍ତ ବିବରଣୀ ସତ୍ୟ ଅଟେ।" 
-              : "I hereby confirm that I consent to be added as a co-borrower / guarantor for this digital loan application. I authorize LendSwift to pull and review my credit reports (CIBIL/Equifax) and verify my PAN details online. I declare that the details provided are true to the best of my knowledge."}
+              ? "ମୁଁ ଏତଦ୍ୱାରା ନିଶ୍ଚିତ କରୁଛି ଯେ ମୁଁ ଏହି ଋଣ ଆବେଦନ ପାଇଁ ସହ-ଋଣଗ୍ରହିତା / ଗାରେଣ୍ଟର ଭାବରେ ଯୋଡି ହେବାକୁ ସମ୍ମତି ପ୍ରଦାନ କରୁଛି। ମୋର କ୍ରେଡିଟ୍ ରିପୋର୍ଟ (CIBIL/Equifax) ଯାଞ୍ଚ କରିବାକୁ ଏବଂ ମୋର PAN ବିବରଣୀ ସତ୍ୟାପନ କରିବାକୁ ମୁଁ ଉତ୍କଳ କ୍ରେଡ୍ (UtkalCred) କୁ ଅଧିକାର ଦେଉଛି। ମୋର ଜ୍ଞାନ ଅନୁଯାୟୀ ପ୍ରଦାନ କରାଯାଇଥିବା ସମସ୍ତ ବିବରଣୀ ସତ୍ୟ ଅଟେ।" 
+              : "I hereby confirm that I consent to be added as a co-borrower / guarantor for this digital loan application. I authorize UtkalCred to pull and review my credit reports (CIBIL/Equifax) and verify my PAN details online. I declare that the details provided are true to the best of my knowledge."}
           </label>
         </div>
         {errors.coApplicantConsent && (

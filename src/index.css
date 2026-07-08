@@ -278,3 +278,314 @@ span.bg-emerald-500, span.bg-green-500 {
 span.bg-emerald-400, span.bg-green-400 {
   background-color: #71717a !important;
 }
+
+/* --- HIGH-CONTRAST DARK THEME OVERRIDES --- */
+.dark body {
+  background-color: #09090b !important;
+  color: #f4f4f5 !important;
+}
+
+.dark input[type="text"],
+.dark input[type="number"],
+.dark input[type="email"],
+.dark input[type="tel"],
+.dark input[type="date"],
+.dark select,
+.dark textarea {
+  background-color: #09090b !important;
+  border-color: #27272a !important;
+  color: #fafafa !important;
+}
+
+.dark input:hover, .dark select:hover, .dark textarea:hover {
+  border-color: #52525b !important;
+}
+
+.dark input:focus, .dark select:focus, .dark textarea:focus {
+  border-color: #fafafa !important;
+  box-shadow: 0 0 0 1px #fafafa !important;
+}
+
+.dark input:disabled, .dark select:disabled, .dark textarea:disabled {
+  background-color: #18181b !important;
+  color: #71717a !important;
+  border-color: #27272a !important;
+}
+
+.dark label {
+  color: #d4d4d8 !important;
+}
+
+.dark .bg-white {
+  background-color: #18181b !important;
+  border-color: #27272a !important;
+}
+
+.dark h2 {
+  color: #ffffff !important;
+}
+
+.dark h2 + p {
+  color: #a1a1aa !important;
+}
+
+.dark h3, .dark h4 {
+  color: #ffffff !important;
+}
+
+.dark .bg-blue-600 {
+  background-color: #fafafa !important;
+  border-color: #fafafa !important;
+  color: #09090b !important;
+}
+
+.dark .hover\:bg-blue-700:hover {
+  background-color: #e4e4e7 !important;
+}
+
+.dark .text-blue-600, .dark .text-blue-700, .dark .text-blue-800 {
+  color: #ffffff !important;
+}
+
+.dark .border-blue-600 {
+  border-color: #ffffff !important;
+}
+
+.dark .border-blue-200 {
+  border-color: #27272a !important;
+}
+
+.dark .bg-blue-50 {
+  background-color: #27272a !important;
+}
+
+.dark .bg-blue-50\/50, .dark .bg-blue-50\/30 {
+  background-color: #18181b !important;
+}
+
+.dark .ring-blue-50 {
+  box-shadow: 0 0 0 3px #27272a !important;
+}
+
+.dark .bg-green-50, .dark .bg-emerald-50 {
+  background-color: #18181b !important;
+  border-color: #27272a !important;
+}
+
+.dark .text-green-700, .dark .text-emerald-700, .dark .text-green-600, .dark .text-emerald-600 {
+  color: #fafafa !important;
+}
+
+.dark .border-green-100, .dark .border-green-200 {
+  border-color: #27272a !important;
+}
+
+.dark .text-blue-600.hover\:underline:hover, .dark .text-blue-600.hover\:underline {
+  color: #ffffff !important;
+}
+
+.dark .text-green-600 svg, .dark .text-green-500 svg, .dark .text-emerald-500 svg {
+  color: #ffffff !important;
+}
+
+.dark .border-dashed {
+  border-color: #3f3f46 !important;
+  background-color: #18181b !important;
+}
+
+.dark .border-dashed:hover {
+  border-color: #52525b !important;
+  background-color: #27272a !important;
+}
+
+.dark canvas {
+  border-color: #3f3f46 !important;
+  background-color: #18181b !important;
+}
+
+.dark .bg-slate-100 {
+  background-color: #27272a !important;
+}
+
+.dark .hover\:bg-slate-200:hover {
+  background-color: #3f3f46 !important;
+}
+
+.dark .text-slate-600, .dark .text-slate-500 {
+  color: #a1a1aa !important;
+}
+
+.dark .text-slate-900 {
+  color: #ffffff !important;
+}
+
+.dark .border-slate-200 {
+  border-color: #27272a !important;
+}
+
+.dark .hover\:border-slate-300:hover {
+  border-color: #3f3f46 !important;
+}
+
+.dark button[role="radio"] {
+  border-color: #27272a !important;
+}
+
+.dark span.bg-emerald-500, .dark span.bg-green-500 {
+  background-color: #ffffff !important;
+}
+
+.dark span.bg-emerald-400, .dark span.bg-green-400 {
+  background-color: #a1a1aa !important;
+}
+
+.dark .text-slate-800 {
+  color: #e4e4e7 !important;
+}
+.dark .text-slate-700 {
+  color: #d4d4d8 !important;
+}
+.dark .text-slate-400 {
+  color: #a1a1aa !important;
+}
+.dark .text-slate-300 {
+  color: #d4d4d8 !important;
+}
+.dark .border-slate-100 {
+  border-color: #27272a !important;
+}
+.dark .border-slate-300 {
+  border-color: #3f3f46 !important;
+}
+.dark .bg-slate-50 {
+  background-color: #18181b !important;
+}
+
+/* Ensure secondary buttons and links look correct in dark mode */
+.dark button:disabled {
+  background-color: #18181b !important;
+  color: #52525b !important;
+  border-color: #27272a !important;
+}
+.dark button.bg-slate-100, .dark button.bg-slate-50 {
+  background-color: #27272a !important;
+  color: #ffffff !important;
+}
+.dark button.bg-slate-100:hover {
+  background-color: #3f3f46 !important;
+}
+
+/* --- ZINC CLASS DARK MODE OVERRIDES --- */
+.dark #app-wrapper, .dark .bg-zinc-50 {
+  background-color: #09090b !important;
+  color: #f4f4f5 !important;
+}
+
+.dark .bg-zinc-50\/50, .dark .bg-zinc-50\/30 {
+  background-color: #18181b !important;
+}
+
+.dark .bg-white {
+  background-color: #18181b !important;
+}
+
+.dark .border-zinc-100 {
+  border-color: #27272a !important;
+}
+
+.dark .border-zinc-200, .dark .border-zinc-200\/80 {
+  border-color: #27272a !important;
+}
+
+.dark .border-zinc-300 {
+  border-color: #3f3f46 !important;
+}
+
+.dark .text-zinc-900, .dark .text-zinc-950 {
+  color: #ffffff !important;
+}
+
+.dark .text-zinc-800 {
+  color: #e4e4e7 !important;
+}
+
+.dark .text-zinc-700 {
+  color: #d4d4d8 !important;
+}
+
+.dark .text-zinc-600 {
+  color: #a1a1aa !important;
+}
+
+.dark .text-zinc-500 {
+  color: #71717a !important;
+}
+
+.dark .text-zinc-400 {
+  color: #52525b !important;
+}
+
+.dark .bg-zinc-100 {
+  background-color: #27272a !important;
+}
+
+.dark .hover\:bg-zinc-100:hover {
+  background-color: #27272a !important;
+}
+
+.dark .hover\:bg-zinc-200:hover {
+  background-color: #3f3f46 !important;
+}
+
+.dark select option, .dark select {
+  background-color: #18181b !important;
+  color: #ffffff !important;
+}
+
+/* --- PRINT MEDIA CONFIGURATION --- */
+@media print {
+  /* Hide the entire web application chrome, backdrops, calculators, and navigation */
+  html, body, #app-wrapper, header, main, footer, .no-print {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    border: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Make only the designated application summary report container visible */
+  #printable-summary, #printable-summary * {
+    visibility: visible !important;
+  }
+
+  #printable-summary {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 1.5cm !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+  }
+
+  /* Ensure page breaks are handled nicely */
+  tr, p, h3, h4, div {
+    page-break-inside: avoid;
+  }
+
+  a {
+    text-decoration: none !important;
+    color: #000000 !important;
+  }
+
+  /* Exclude elements marked as explicitly un-printable */
+  .print-exclude {
+    display: none !important;
+  }
+}
+
+
+

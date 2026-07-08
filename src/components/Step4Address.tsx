@@ -74,6 +74,19 @@ export default function Step4Address({
     }
   }, [currentPinCode, language]);
 
+  // Auto-fill trigger when 6 digit permanent PIN is entered
+  useEffect(() => {
+    if (permanentPinCode && /^\d{6}$/.test(permanentPinCode)) {
+      const found = pinCodeDataset.find((rec) => rec.pin === permanentPinCode);
+      if (found) {
+        updateFormState({
+          permanentCity: found.city,
+          permanentState: found.state
+        });
+      }
+    }
+  }, [permanentPinCode]);
+
   // Check state discrepancy when user modifies the auto-filled state
   const handleStateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -143,6 +156,51 @@ export default function Step4Address({
           {language === "hi" ? "वर्तमान आवासीय पता" : language === "or" ? "ବର୍ତ୍ତମାନର ଆବାସିକ ଠିକଣା" : "Current Residential Address"}
         </h3>
         
+        {/* Quick Odisha PIN Dropdown */}
+        {(() => {
+          const odishaPinOptions = pinCodeDataset
+            .filter((p) => p.state === "Odisha")
+            .sort((a, b) => a.city.localeCompare(b.city));
+          return (
+            <div className="bg-blue-50/50 dark:bg-zinc-800/40 p-4 rounded-xl border border-blue-100 dark:border-zinc-800 space-y-2">
+              <label htmlFor="odishaPinSelector" className="block text-xs font-bold text-blue-800 dark:text-zinc-200 uppercase tracking-wider">
+                📍 {language === "hi" ? "ओडिशा पिन कोड त्वरित चयन" : language === "or" ? "ଓଡ଼ିଶା ପିନ୍ କୋଡ୍ ସହଜ ଚୟନ" : "Odisha Quick PIN Selector"}
+              </label>
+              <select
+                id="odishaPinSelector"
+                value={currentPinCode && odishaPinOptions.some(p => p.pin === currentPinCode) ? currentPinCode : ""}
+                onChange={(e) => {
+                  const selectedPin = e.target.value;
+                  if (selectedPin) {
+                    updateFormState({ currentPinCode: selectedPin });
+                  }
+                }}
+                className="block w-full px-3 py-2 bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              >
+                <option value="">
+                  {language === "hi" 
+                    ? "-- ओडिशा का एक जिला/शहर चुनें --" 
+                    : language === "or" 
+                    ? "-- ଓଡ଼ିଶାର ଏକ ଜିଲ୍ଲା/ସହର ଚୟନ କରନ୍ତୁ --" 
+                    : "-- Select an Odisha District/City --"}
+                </option>
+                {odishaPinOptions.map((item) => (
+                  <option key={item.pin} value={item.pin}>
+                    {item.city} ({item.pin}) - {item.office}
+                  </option>
+                ))}
+              </select>
+              <p className="text-[11px] text-slate-500">
+                {language === "hi" 
+                  ? "ओडिशा के आवेदकों के लिए: अपना जिला चुनें और पिन कोड, शहर तथा राज्य स्वचालित रूप से भर जाएंगे।" 
+                  : language === "or" 
+                  ? "ଓଡ଼ିଶା ଆବେଦନକାରୀଙ୍କ ପାଇଁ: ଆପଣଙ୍କ ଜିଲ୍ଲା ଚୟନ କରନ୍ତୁ ଏବଂ ପିନ୍ କୋଡ୍, ସହର ଏବଂ ରାଜ୍ୟ ସ୍ୱୟଂଚାଳିତ ଭାବରେ ପୂରଣ ହେବ।" 
+                  : "For Odisha applicants: Select your district, and PIN code, city, and state will auto-populate."}
+              </p>
+            </div>
+          );
+        })()}
+
         {/* PIN Code Field with Auto-Lookup */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -428,6 +486,44 @@ export default function Step4Address({
           <h3 className="text-sm font-semibold text-slate-800 uppercase tracking-wider">
             {language === "hi" ? "स्थायी आवासीय पता" : language === "or" ? "ସ୍ଥାୟୀ ଆବାସିକ ଠିକଣା" : "Permanent Residential Address"}
           </h3>
+
+          {/* Quick Odisha PIN Dropdown for Permanent */}
+          {(() => {
+            const odishaPinOptions = pinCodeDataset
+              .filter((p) => p.state === "Odisha")
+              .sort((a, b) => a.city.localeCompare(b.city));
+            return (
+              <div className="bg-blue-50/50 dark:bg-zinc-800/40 p-4 rounded-xl border border-blue-100 dark:border-zinc-800 space-y-2">
+                <label htmlFor="permanentOdishaPinSelector" className="block text-xs font-bold text-blue-800 dark:text-zinc-200 uppercase tracking-wider">
+                  📍 {language === "hi" ? "स्थायी ओडिशा पिन कोड त्वरित चयन" : language === "or" ? "ସ୍ଥାୟୀ ଓଡ଼ିଶା ପିନ୍ କୋଡ୍ ସହଜ ଚୟନ" : "Permanent Odisha Quick PIN Selector"}
+                </label>
+                <select
+                  id="permanentOdishaPinSelector"
+                  value={permanentPinCode && odishaPinOptions.some(p => p.pin === permanentPinCode) ? permanentPinCode : ""}
+                  onChange={(e) => {
+                    const selectedPin = e.target.value;
+                    if (selectedPin) {
+                      updateFormState({ permanentPinCode: selectedPin });
+                    }
+                  }}
+                  className="block w-full px-3 py-2 bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                >
+                  <option value="">
+                    {language === "hi" 
+                      ? "-- ओडिशा का एक जिला/शहर चुनें --" 
+                      : language === "or" 
+                      ? "-- ଓଡ଼ିଶାର ଏକ ଜିଲ୍ଲା/ସହର ଚୟନ କରନ୍ତୁ --" 
+                      : "-- Select an Odisha District/City --"}
+                  </option>
+                  {odishaPinOptions.map((item) => (
+                    <option key={item.pin} value={item.pin}>
+                      {item.city} ({item.pin}) - {item.office}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            );
+          })()}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">

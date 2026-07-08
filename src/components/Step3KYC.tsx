@@ -177,9 +177,9 @@ export default function Step3KYC({
             name="aadhaarNumber"
             value={aadhaarLoading || aadhaarVerified ? maskAadhaar(aadhaarNumber) : aadhaarNumber}
             disabled={aadhaarLoading || aadhaarVerified}
-            onChange={(e) => updateFormState({ aadhaarNumber: e.target.value.replace(/\D/g, "").substring(0, 12), aadhaarVerified: false })}
+            onChange={(e) => updateFormState({ aadhaarNumber: e.target.value.replace(/\D/g, ""), aadhaarVerified: false })}
             onBlur={handleAadhaarBlur}
-            placeholder={language === "hi" ? "जैसे: 5432 1098 7654" : language === "or" ? "ଉଦାହରଣ: ୫୪୩୨ ୧୦୯୮ ୭୬୫୪" : "e.g. 5432 1098 7654"}
+            placeholder="12-digit UID Number"
             maxLength={12}
             className={`block w-full px-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500 font-mono tracking-widest ${
               errors.aadhaarNumber ? "border-red-500" : "border-slate-200 hover:border-slate-300"
@@ -187,7 +187,7 @@ export default function Step3KYC({
             aria-invalid={errors.aadhaarNumber ? "true" : "false"}
             aria-describedby={errors.aadhaarNumber ? "aadhaarNumber-error" : undefined}
           />
-
+          
           <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
             {aadhaarLoading && (
               <span className="flex h-5 w-5 items-center justify-center">
@@ -237,16 +237,16 @@ export default function Step3KYC({
             type="checkbox"
             id="aadhaarConsent"
             name="aadhaarConsent"
-            checked={aadhaarConsent}
+            checked={!!aadhaarConsent}
             onChange={(e) => updateFormState({ aadhaarConsent: e.target.checked })}
-            className="mt-1 h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
+            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 mt-1 cursor-pointer"
           />
           <label htmlFor="aadhaarConsent" className="text-xs text-slate-600 leading-normal cursor-pointer select-none">
             {language === "hi"
-              ? "मैं इसके द्वारा प्रदान किए गए आधार नंबर का उपयोग करके यूआईडीएआई से अपनी पहचान सत्यापित करने और अपनी जनसांख्यिकीय विवरण प्राप्त करने के लिए LendSwift को अपनी स्पष्ट सहमति देता हूं। मैं समझता हूं कि इस जानकारी का उपयोग केवल डिजिटल ऋण पर आरबीआई के दिशानिर्देशों के तहत क्रेडिट मूल्यांकन और केवाईसी अनुपालन के उद्देश्य से किया जाएगा।"
+              ? "मैं इसके द्वारा प्रदान किए गए आधार नंबर का उपयोग करके यूआईडीएआई से अपनी पहचान सत्यापित करने और अपनी जनसांख्यिकीय विवरण प्राप्त करने के लिए उत्कल क्रेड (UtkalCred) को अपनी स्पष्ट सहमति देता हूं। मैं समझता हूं कि इस जानकारी का उपयोग केवल डिजिटल ऋण पर आरबीआई के दिशानिर्देशों के तहत क्रेडिट मूल्यांकन और केवाईसी अनुपालन के उद्देश्य से किया जाएगा।"
               : language === "or"
-              ? "ମୁଁ ଏତଦ୍ୱାରା ପ୍ରଦାନ କରାଯାଇଥିବା ଆଧାର ନମ୍ବର ବ୍ୟବହାର କରି UIDAI ରୁ ମୋର ପରିଚୟ ଯାଞ୍ଚ କରିବା ଏବଂ ମୋର ଜନସଂଖ୍ୟା ଗତ ବିବରଣୀ ହାସଲ କରିବା ପାଇଁ LendSwift କୁ ମୋର ସ୍ପଷ୍ଟ ସମ୍ମତି ପ୍ରଦାନ କରୁଛି। ମୁଁ ବୁଝିପାରୁଛି ଯେ ଏହି ସୂଚନା କେବଳ ଡିଜିଟାଲ୍ ଋଣ ଉପରେ RBI ର ମାର୍ଗଦର୍ଶିକା ଅନୁଯାୟୀ କ୍ରେଡିଟ୍ ମୂଲ୍ୟାଙ୍କନ ଏବଂ KYC ଅନୁପାଳନ ଉଦ୍ଦେଶ୍ୟରେ ବ୍ୟବହାର କରାଯିବ।"
-              : "I hereby give my explicit consent to LendSwift to verify my identity and retrieve my demographic details from UIDAI using the Aadhaar number provided. I understand that this information will be used solely for the purpose of credit evaluation and KYC compliance as mandated by the RBI Guidelines on Digital Lending."}
+              ? "ମୁଁ ଏତଦ୍ୱାରା ପ୍ରଦାନ କରାଯାଇଥିବା ଆଧାର ନମ୍ବର ବ୍ୟବହାର କରି UIDAI ରୁ ମୋର ପରିଚୟ ଯାଞ୍ଚ କରିବା ଏବଂ ମୋର ଜନସଂଖ୍ୟା ଗତ ବିବରଣୀ ହାସଲ କରିବା ପାଇଁ ଉତ୍କଳ କ୍ରେଡ୍ (UtkalCred) କୁ ମୋର ସ୍ପଷ୍ଟ ସମ୍ମତି ପ୍ରଦାନ କରୁଛି। ମୋର ବୁଝିପାରୁଛି ଯେ ଏହି ସୂଚନା କେବଳ ଡିଜିଟାଲ୍ ଋଣ ଉପରେ RBI ର ମାର୍ଗଦର୍ଶିକା ଅନୁଯାୟୀ କ୍ରେଡିଟ୍ ମୂଲ୍ୟାଙ୍କନ ଏବଂ KYC ଅନୁପାଳନ ଉଦ୍ଦେଶ୍ୟରେ ବ୍ୟବହାର କରାଯିବ।"
+              : "I hereby give my explicit consent to UtkalCred to verify my identity and retrieve my demographic details from UIDAI using the Aadhaar number provided. I understand that this information will be used solely for the purpose of credit evaluation and KYC compliance as mandated by the RBI Guidelines on Digital Lending."}
           </label>
         </div>
         {errors.aadhaarConsent && (

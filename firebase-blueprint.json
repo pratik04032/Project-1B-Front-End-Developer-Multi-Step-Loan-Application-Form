@@ -1,0 +1,114 @@
+{
+  "entities": {
+    "Application": {
+      "title": "Application",
+      "description": "A multi-step digital loan application containing applicant, income, KYC, and document metadata.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique reference ID of the application."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Full legal name of the applicant."
+        },
+        "panNumber": {
+          "type": "string",
+          "description": "10-digit Permanent Account Number (PAN)."
+        },
+        "aadhaarNumber": {
+          "type": "string",
+          "description": "12-digit Aadhaar Card number."
+        },
+        "loanAmount": {
+          "type": "number",
+          "description": "Requested loan amount in INR."
+        },
+        "loanTenure": {
+          "type": "number",
+          "description": "Loan tenure in months."
+        },
+        "loanType": {
+          "type": "string",
+          "description": "Type of loan requested."
+        },
+        "status": {
+          "type": "string",
+          "description": "Current processing status of the application."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of application creation."
+        },
+        "isDefaulter": {
+          "type": "boolean",
+          "description": "True if the applicant is flagged as a defaulter in the central database."
+        }
+      },
+      "required": [
+        "id",
+        "fullName",
+        "panNumber",
+        "aadhaarNumber",
+        "loanAmount",
+        "loanTenure",
+        "loanType"
+      ]
+    },
+    "Defaulter": {
+      "title": "Defaulter",
+      "description": "A registry entry tracking flagged defaulters by PAN or Aadhaar card.",
+      "type": "object",
+      "properties": {
+        "applicationId": {
+          "type": "string",
+          "description": "The loan application ID that prompted the flagging."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Legal name of the flagged defaulter."
+        },
+        "panNumber": {
+          "type": "string",
+          "description": "The flagged 10-digit PAN."
+        },
+        "aadhaarNumber": {
+          "type": "string",
+          "description": "The flagged 12-digit Aadhaar."
+        },
+        "isDefaulter": {
+          "type": "boolean",
+          "description": "Indicates active defaulter status."
+        },
+        "reason": {
+          "type": "string",
+          "description": "The reason for default/blacklisting."
+        },
+        "markedAt": {
+          "type": "string",
+          "description": "ISO timestamp of when the individual was flagged."
+        }
+      },
+      "required": [
+        "fullName",
+        "isDefaulter",
+        "reason"
+      ]
+    }
+  },
+  "firestore": {
+    "applications/{applicationId}": {
+      "schema": {
+        "$ref": "#/entities/Application"
+      },
+      "description": "Contains submitted and in-progress loan applications."
+    },
+    "defaulters/{identityId}": {
+      "schema": {
+        "$ref": "#/entities/Defaulter"
+      },
+      "description": "Registry of blacklisted PAN/Aadhaar combos with default descriptions."
+    }
+  }
+}
