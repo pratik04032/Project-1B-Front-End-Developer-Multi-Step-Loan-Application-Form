@@ -50,6 +50,7 @@ export default function App() {
 
   // Save/Notification states
   const [toastMessage, setToastMessage] = useState("");
+  const [showSavedIndicator, setShowSavedIndicator] = useState(false);
   const [resumeModalData, setResumeModalData] = useState<{
     loanType: string;
     step: number;
@@ -188,8 +189,8 @@ export default function App() {
     currentStep,
     30000,
     (time) => {
-      setToastMessage(`Draft saved securely at ${time}`);
-      setTimeout(() => setToastMessage(""), 3000);
+      setShowSavedIndicator(true);
+      setTimeout(() => setShowSavedIndicator(false), 2500);
     }
   );
 
@@ -704,7 +705,7 @@ export default function App() {
 
       {/* GLOBAL NOTIFICATION TOAST */}
       {toastMessage && (
-        <div className="fixed top-6 right-6 z-50 bg-zinc-900 text-zinc-100 text-xs font-medium px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 border border-zinc-800 animate-fadeIn" role="status">
+        <div className="fixed top-6 right-6 z-[60] bg-zinc-900 text-zinc-100 text-xs font-medium px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 border border-zinc-800 animate-fadeIn" role="status">
           <span className="flex h-1.5 w-1.5 relative">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-zinc-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-zinc-300"></span>
@@ -712,6 +713,22 @@ export default function App() {
           {toastMessage}
         </div>
       )}
+
+      {/* BACKGROUND AUTO-SAVE INDICATOR */}
+      <AnimatePresence>
+        {showSavedIndicator && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="fixed top-6 right-6 z-50 bg-white border border-zinc-200 shadow-md text-zinc-700 text-xs font-medium px-3 py-1.5 rounded-full flex items-center gap-1.5"
+          >
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+            <span>Saved</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* HEADER RAIL */}
       <header className="bg-white border-b border-zinc-200/80 sticky top-0 z-40 px-6 lg:px-8 py-4 flex flex-col sm:flex-row gap-4 sm:gap-0 justify-between sm:items-center relative">
