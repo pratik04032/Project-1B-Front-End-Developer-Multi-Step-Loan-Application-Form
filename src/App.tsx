@@ -202,7 +202,7 @@ export default function App() {
     const filteredErrors: Record<string, string> = {};
     Object.keys(currentErrors).forEach((key) => {
       if (blurredFields[key]) {
-        filteredErrors[key] = currentErrors[key];
+        filteredErrors[key] = t(currentErrors[key]);
       }
     });
     setErrors(filteredErrors);
@@ -253,7 +253,9 @@ export default function App() {
         allBlurred[key] = true;
       });
       setBlurredFields(allBlurred);
-      setErrors(stepErrors);
+      const translatedStepErrors: Record<string, string> = {};
+      Object.keys(stepErrors).forEach(k => translatedStepErrors[k] = t(stepErrors[k]));
+      setErrors(translatedStepErrors);
       
       // Auto-focus first error field for screen readers and accessibility
       const firstErrorKey = Object.keys(stepErrors)[0];
@@ -531,7 +533,7 @@ export default function App() {
       // Flatten error map and notify
       const flatErrors: Record<string, string> = {};
       Object.keys(stepErrors).forEach((stepNum) => {
-        Object.assign(flatErrors, stepErrors[Number(stepNum)]);
+        const errs = stepErrors[Number(stepNum)]; Object.keys(errs).forEach(k => flatErrors[k] = t(errs[k]));
       });
       setErrors(flatErrors);
       alert("Application could not be submitted. Please check your inputs across all steps.");

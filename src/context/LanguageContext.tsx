@@ -14,7 +14,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   // Load initial language from localStorage or default to English
   const [language, setLanguageState] = useState<Language>(() => {
     const saved = localStorage.getItem("preferred_language");
-    if (saved === "hi" || saved === "or" || saved === "en") {
+    if (["en", "hi", "or", "bn", "te", "ta", "mr"].includes(saved || "")) {
       return saved as Language;
     }
     return "en";
@@ -27,16 +27,23 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   // Translation function with fallback
   const t = (key: string): string => {
-    const langDict = translations[language];
-    if (key in langDict) {
-      return (langDict as any)[key];
+    const langDict = (translations as any)[language];
+    if (langDict && key in langDict) {
+      return langDict[key];
     }
     // Fallback to English
-    const engDict = translations["en"];
-    if (key in engDict) {
-      return (engDict as any)[key];
+    const engDict = (translations as any)["en"];
+    let englishText = key;
+    if (engDict && key in engDict) {
+      englishText = engDict[key];
     }
-    return key;
+    
+    // If not English and we don't have a translation, show placeholder prefix
+    if (language !== "en") {
+      // For testing/placeholder purposes, prefix the string with language code
+      return `[${language.toUpperCase()}] ${englishText}`;
+    }
+    return englishText;
   };
 
   return (

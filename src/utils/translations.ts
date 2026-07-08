@@ -1,4 +1,4 @@
-export type Language = "en" | "hi" | "or";
+export type Language = "en" | "hi" | "or" | "bn" | "te" | "ta" | "mr";
 
 export interface LanguageConfig {
   code: Language;
@@ -9,7 +9,11 @@ export interface LanguageConfig {
 export const LANGUAGES: LanguageConfig[] = [
   { code: "en", name: "English", nativeName: "English" },
   { code: "hi", name: "Hindi", nativeName: "हिन्दी" },
-  { code: "or", name: "Odia", nativeName: "ଓଡ଼ିଆ" }
+  { code: "or", name: "Odia", nativeName: "ଓଡ଼ିଆ" },
+  { code: "bn", name: "Bengali", nativeName: "বাংলা" },
+  { code: "te", name: "Telugu", nativeName: "తెలుగు" },
+  { code: "ta", name: "Tamil", nativeName: "தமிழ்" },
+  { code: "mr", name: "Marathi", nativeName: "मराठी" }
 ];
 
 export const translations = {
