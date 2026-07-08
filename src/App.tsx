@@ -18,7 +18,7 @@ import { useAutoSave } from "./hooks/useAutoSave";
 import SessionTimer from "./components/SessionTimer";
 import { useLanguage } from "./context/LanguageContext";
 import { Language } from "./utils/translations";
-import { Globe, Sun, Moon, Sparkles, Printer, ShieldAlert, Search, Users, CheckCircle, AlertTriangle, ArrowLeft } from "lucide-react";
+import { Globe, Sun, Moon, Sparkles, Printer, ShieldAlert, Search, Users, CheckCircle, AlertTriangle, ArrowLeft, LogOut } from "lucide-react";
 import { useTheme } from "./context/ThemeContext";
 import { validateAadhaar } from "./utils/validators";
 import { saveApplication, checkIfDefaulter, getAllApplications, setDefaulterStatus } from "./lib/firebase";
@@ -34,6 +34,7 @@ import Step6CoApplicant from "./components/Step6CoApplicant";
 import Step7Documents from "./components/Step7Documents";
 import Step8Review from "./components/Step8Review";
 import AdminDashboard from "./components/AdminDashboard";
+import LoginPortal from "./components/LoginPortal";
 
 export default function App() {
   const { language, setLanguage, t, languages } = useLanguage();
@@ -54,11 +55,41 @@ export default function App() {
   } | null>(null);
 
   // Admin Portal & Defaulter check states
+  const [currentUser, setCurrentUser] = useState<{ email: string; role: "admin" | "applicant" } | null>(() => {
+    try {
+      const saved = localStorage.getItem("lendswift_user");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && (parsed.role === "admin" || parsed.role === "applicant")) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error("Failed to parse saved user:", e);
+    }
+    return null;
+  });
+
   const [isAdminView, setIsAdminView] = useState(false);
   const [adminApplications, setAdminApplications] = useState<any[]>([]);
   const [isAdminLoading, setIsAdminLoading] = useState(false);
   const [defaulterAlert, setDefaulterAlert] = useState<{ isDefaulter: boolean; reason?: string } | null>(null);
   const [adminSearch, setAdminSearch] = useState("");
+
+  // Sync admin view and load admin apps based on currentUser role
+  useEffect(() => {
+    if (currentUser) {
+      setIsAdminView(currentUser.role === "admin");
+    } else {
+      setIsAdminView(false);
+    }
+  }, [currentUser]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("lendswift_user");
+    setCurrentUser(null);
+    setIsAdminView(false);
+  };
 
   // Real-time Defaulter registry check on PAN or Aadhaar update
   useEffect(() => {
@@ -104,21 +135,18 @@ export default function App() {
     }
   }, [isAdminView]);
 
-  // Initialize and check for existing drafts on load
+  // Initialize and check for existing drafts on load (disabled automatic draft resume popup as requested)
   useEffect(() => {
-    const latest = findLatestDraft();
-    if (latest) {
-      setResumeModalData(latest);
-    }
+    // const latest = findLatestDraft();
+    // if (latest) {
+    //   setResumeModalData(latest);
+    // }
   }, []);
 
-  // Automatically trigger native print dialog when successfully submitted
+  // Automatically trigger native print dialog when successfully submitted (disabled automatic print popup as requested)
   useEffect(() => {
     if (globalSuccess) {
-      const timer = setTimeout(() => {
-        window.print();
-      }, 1000);
-      return () => clearTimeout(timer);
+      // window.print();
     }
   }, [globalSuccess]);
 
@@ -634,7 +662,7 @@ export default function App() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 self-end sm:self-auto">
+        <div className="flex flex-wrap items-center gap-3 self-end sm:self-auto">
           {/* Theme Switcher Button */}
           <button
             type="button"
@@ -667,61 +695,74 @@ export default function App() {
             </select>
           </div>
 
-          {/* Admin Dashboard Trigger */}
-          <button
-            type="button"
-            onClick={() => setIsAdminView(!isAdminView)}
-            className={`text-xs font-semibold px-3.5 py-1.5 rounded border transition-colors cursor-pointer flex items-center gap-1.5 shrink-0 ${
-              isAdminView
-                ? "bg-zinc-900 text-zinc-50 border-zinc-950 hover:bg-zinc-800"
-                : "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
-            }`}
-            title="Toggle Admin Defaulter & Application Dashboard"
-          >
-            <ShieldAlert className="h-3.5 w-3.5" />
-            <span>{isAdminView ? "Back to Loan Form" : "Admin Portal"}</span>
-          </button>
+          {/* Prefill Sample Data Utility for Dev/Testing (Applicant Only) */}
+          {currentUser?.role === "applicant" && !isAdminView && (
+            <button
+              type="button"
+              onClick={handlePrefillSampleData}
+              className="text-xs font-semibold text-blue-700 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60 border border-blue-200 dark:border-blue-900 px-3.5 py-1.5 rounded transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
+              title="Prefill all steps with valid test data"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+              <span className="hidden md:inline">Prefill Sample Data</span>
+              <span className="md:hidden">Prefill</span>
+            </button>
+          )}
 
-          {/* Prefill Sample Data Utility for Dev/Testing */}
-          <button
-            type="button"
-            onClick={handlePrefillSampleData}
-            className="text-xs font-semibold text-blue-700 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-950/60 border border-blue-200 dark:border-blue-900 px-3.5 py-1.5 rounded transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
-            title="Prefill all steps with valid test data"
-          >
-            <Sparkles className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-            <span className="hidden md:inline">Prefill Sample Data</span>
-            <span className="md:hidden">Prefill</span>
-          </button>
+          {/* Save Draft Button (Applicant Only) */}
+          {currentUser?.role === "applicant" && !isAdminView && (
+            <button
+              type="button"
+              onClick={handleManualSave}
+              disabled={isSaving}
+              className="text-xs font-semibold text-zinc-600 hover:text-zinc-900 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 px-3.5 py-1.5 rounded transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
+            >
+              {isSaving ? t("submitting") : t("saveDraft")}
+            </button>
+          )}
 
-          <button
-            type="button"
-            onClick={handleManualSave}
-            disabled={isSaving}
-            className="text-xs font-semibold text-zinc-600 hover:text-zinc-900 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 px-3.5 py-1.5 rounded transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
-          >
-            {isSaving ? t("submitting") : t("saveDraft")}
-          </button>
+          {/* Logout Button (For any logged in user) */}
+          {currentUser && (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-3.5 py-1.5 rounded transition-colors cursor-pointer flex items-center gap-1.5 shrink-0 animate-fadeIn"
+              title="Sign out of the secure gateway"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span>Log Out</span>
+            </button>
+          )}
         </div>
 
         {/* Global Progress Bar at bottom of header */}
-        <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-zinc-100/50 dark:bg-zinc-800/50">
-          <div
-            className="h-full bg-zinc-900 dark:bg-zinc-100 transition-all duration-500 ease-out"
-            style={{ width: `${globalSuccess ? 100 : completionPercentage}%` }}
-          ></div>
-        </div>
+        {currentUser?.role === "applicant" && !isAdminView && (
+          <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-zinc-100/50 dark:bg-zinc-800/50">
+            <div
+              className="h-full bg-zinc-900 dark:bg-zinc-100 transition-all duration-500 ease-out"
+              style={{ width: `${globalSuccess ? 100 : completionPercentage}%` }}
+            ></div>
+          </div>
+        )}
       </header>
 
       {/* MAIN CONTAINER */}
       <main className="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6 lg:p-8 space-y-6">
         
-        {isAdminView ? (
+        {!currentUser ? (
+          <LoginPortal
+            onLogin={(user) => {
+              setCurrentUser(user);
+              localStorage.setItem("lendswift_user", JSON.stringify(user));
+            }}
+            language={language}
+          />
+        ) : isAdminView ? (
           <AdminDashboard
             applications={adminApplications}
             isLoading={isAdminLoading}
             onRefresh={loadAdminApplications}
-            onClose={() => setIsAdminView(false)}
+            onClose={handleLogout}
           />
         ) : globalSuccess ? (
           <div className="bg-white border border-zinc-200 rounded-xl p-8 text-center max-w-xl mx-auto space-y-6 my-12 animate-fadeIn" id="success-portal">

@@ -1,0 +1,252 @@
+import React, { useState } from "react";
+import { ShieldAlert, Users, Lock, Mail, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { motion } from "motion/react";
+
+interface LoginPortalProps {
+  onLogin: (user: { email: string; role: "admin" | "applicant" }) => void;
+  language: string;
+}
+
+export default function LoginPortal({ onLogin, language }: LoginPortalProps) {
+  const [activeTab, setActiveTab] = useState<"applicant" | "admin">("applicant");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    setTimeout(() => {
+      if (activeTab === "admin") {
+        if (email.trim().toLowerCase() === "admin@lendswift.com" && password === "admin123") {
+          onLogin({ email: email.trim(), role: "admin" });
+        } else {
+          setError(
+            language === "hi"
+              ? "अमान्य क्रेडेंशियल्स। कृपया admin@lendswift.com और पासवर्ड admin123 का उपयोग करें।"
+              : language === "or"
+              ? "ଅମାନ୍ୟ କ୍ରେଡେନ୍ସିଆଲ୍ | ଦୟାକରି admin@lendswift.com ଏବଂ ପାସୱାର୍ଡ admin123 ବ୍ୟବହାର କରନ୍ତୁ |"
+              : "Invalid administrator credentials. Please use admin@lendswift.com & password admin123"
+          );
+        }
+      } else {
+        // Applicant Login
+        if (!email.trim() || !email.includes("@")) {
+          setError(
+            language === "hi"
+              ? "कृपया एक वैध ईमेल पता दर्ज करें।"
+              : language === "or"
+              ? "ଦୟାକରି ଏକ ବୈଧ ଇମେଲ୍ ଠିକଣା ପ୍ରବେଶ କରନ୍ତୁ |"
+              : "Please enter a valid email address."
+          );
+        } else {
+          onLogin({ email: email.trim().toLowerCase(), role: "applicant" });
+        }
+      }
+      setIsLoading(false);
+    }, 600);
+  };
+
+  const quickFillApplicant = () => {
+    setEmail("applicant@lendswift.com");
+    setError(null);
+  };
+
+  const quickFillAdmin = () => {
+    setEmail("admin@lendswift.com");
+    setPassword("admin123");
+    setError(null);
+  };
+
+  return (
+    <div className="min-h-[85vh] flex items-center justify-center p-4 md:p-8 animate-fadeIn" id="login-portal-container">
+      <div className="w-full max-w-md bg-white border border-zinc-200 rounded-2xl shadow-xl overflow-hidden flex flex-col transition-all">
+        
+        {/* Portal Header */}
+        <div className="bg-zinc-950 p-6 text-white text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,#27272a,transparent)] opacity-70"></div>
+          <div className="relative z-10 space-y-2">
+            <div className="h-10 w-10 rounded bg-white text-zinc-950 flex items-center justify-center font-bold text-lg tracking-wider mx-auto shadow-md">
+              U
+            </div>
+            <h2 className="text-xl font-semibold tracking-tight">UtkalCred Secure Gateway</h2>
+            <p className="text-[11px] text-zinc-400 uppercase tracking-widest font-medium">
+              {language === "hi"
+                ? "डिजिटल ऋण और सत्यापन हब"
+                : language === "or"
+                ? "ଡିଜିଟାଲ୍ ଋଣ ଏବଂ ଯାଞ୍ଚ ହବ୍"
+                : "Digital Lending & Verification Hub"}
+            </p>
+          </div>
+        </div>
+
+        {/* Tab Switcher */}
+        <div className="flex border-b border-zinc-100 bg-zinc-50/50 p-1">
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("applicant");
+              setEmail("");
+              setPassword("");
+              setError(null);
+            }}
+            className={`flex-1 py-3 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              activeTab === "applicant"
+                ? "bg-white text-zinc-950 shadow-2xs border border-zinc-200/50"
+                : "text-zinc-500 hover:text-zinc-900"
+            }`}
+          >
+            <Users className="h-3.5 w-3.5" />
+            <span>
+              {language === "hi" ? "ऋण आवेदक" : language === "or" ? "ଋଣ ଆବେଦନକାରୀ" : "Loan Applicant"}
+            </span>
+          </button>
+          
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("admin");
+              setEmail("");
+              setPassword("");
+              setError(null);
+            }}
+            className={`flex-1 py-3 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              activeTab === "admin"
+                ? "bg-white text-zinc-950 shadow-2xs border border-zinc-200/50"
+                : "text-zinc-500 hover:text-zinc-900"
+            }`}
+          >
+            <ShieldAlert className="h-3.5 w-3.5" />
+            <span>
+              {language === "hi" ? "प्रशासक पोर्टल" : language === "or" ? "ପ୍ରଶାସକ ପୋର୍ଟାଲ୍" : "Admin Portal"}
+            </span>
+          </button>
+        </div>
+
+        {/* Login Form Body */}
+        <form onSubmit={handleLogin} className="p-6 md:p-8 space-y-5 flex-1">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 text-xs px-3.5 py-3 rounded-lg flex items-start gap-2.5 animate-fadeIn">
+              <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5 text-red-500" />
+              <span className="font-medium leading-normal">{error}</span>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            {/* Email field */}
+            <div className="space-y-1.5">
+              <label htmlFor="email" className="block text-[11px] uppercase tracking-wider font-semibold text-zinc-500">
+                {activeTab === "admin" ? "Admin Email Address" : "Applicant Email Address"}
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                <input
+                  id="email"
+                  type="email"
+                  required
+                  placeholder={activeTab === "admin" ? "admin@lendswift.com" : "you@example.com"}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white border border-zinc-200 rounded-lg text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 text-xs font-sans transition-all"
+                />
+              </div>
+            </div>
+
+            {/* Password field (Admin only) */}
+            {activeTab === "admin" && (
+              <div className="space-y-1.5 animate-fadeIn">
+                <div className="flex justify-between items-center">
+                  <label htmlFor="password" className="block text-[11px] uppercase tracking-wider font-semibold text-zinc-500">
+                    Administrator Password
+                  </label>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-10 pr-10 py-2.5 bg-zinc-50 hover:bg-zinc-100/50 focus:bg-white border border-zinc-200 rounded-lg text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 text-xs font-sans transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Form Action Button */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-zinc-900 hover:bg-zinc-800 disabled:bg-zinc-400 text-white font-semibold py-2.5 px-4 rounded-lg shadow-sm hover:shadow transition-all text-xs flex items-center justify-center gap-2 cursor-pointer mt-4"
+          >
+            {isLoading ? (
+              <>
+                <span className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full"></span>
+                <span>
+                  {language === "hi" ? "सत्यापित किया जा रहा है..." : language === "or" ? "ଯାଞ୍ଚ କରାଯାଉଛି..." : "Authenticating..."}
+                </span>
+              </>
+            ) : (
+              <>
+                <span>
+                  {activeTab === "admin"
+                    ? language === "hi"
+                      ? "एडमिन के रूप में लॉग इन करें"
+                      : language === "or"
+                      ? "ଏଡମିନ ଭାବରେ ଲଗଇନ୍ କରନ୍ତୁ"
+                      : "Access Admin Dashboard"
+                    : language === "hi"
+                    ? "ऋण आवेदन शुरू / जारी रखें"
+                    : language === "or"
+                    ? "ଋଣ ଆବେଦନ ଆରମ୍ଭ / ଜାରି ରଖନ୍ତୁ"
+                    : "Start or Resume Application"}
+                </span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </>
+            )}
+          </button>
+
+          {/* Quick-Fill Helper Block */}
+          <div className="border-t border-zinc-100 pt-5 space-y-2 text-center">
+            <span className="block text-[10px] text-zinc-400 uppercase tracking-widest font-semibold">
+              {language === "hi" ? "मूल्यांकन के लिए त्वरित क्रेडेंशियल्स" : language === "or" ? "ମୂଲ୍ୟାଙ୍କନ ପାଇଁ ତ୍ୱରିତ କ୍ରେଡେନ୍ସିଆଲ୍" : "Evaluation Fast-Track Controls"}
+            </span>
+            <div className="flex flex-wrap justify-center gap-2 pt-1">
+              {activeTab === "applicant" ? (
+                <button
+                  type="button"
+                  onClick={quickFillApplicant}
+                  className="px-2.5 py-1.5 bg-zinc-100 hover:bg-zinc-200/80 text-zinc-700 text-[10px] font-semibold rounded border border-zinc-200 transition-all cursor-pointer"
+                >
+                  Fill Applicant Credential
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={quickFillAdmin}
+                  className="px-2.5 py-1.5 bg-zinc-100 hover:bg-zinc-200/80 text-zinc-700 text-[10px] font-semibold rounded border border-zinc-200 transition-all cursor-pointer"
+                >
+                  Fill Admin Credential
+                </button>
+              )}
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

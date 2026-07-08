@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { setDefaulterStatus, updateApplicationStatus } from "../lib/firebase";
 import { 
   ArrowLeft, 
@@ -10,7 +10,9 @@ import {
   TrendingUp, 
   Coins, 
   Calendar,
-  X
+  X,
+  RefreshCw,
+  Radio
 } from "lucide-react";
 
 interface AdminDashboardProps {
@@ -29,6 +31,21 @@ export default function AdminDashboard({
   const [searchTerm, setSearchTerm] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
+  const [liveUpdates, setLiveUpdates] = useState(false);
+
+  // Periodic polling for Live Updates
+  useEffect(() => {
+    if (!liveUpdates) return;
+
+    // Fetch immediately on mount or activation
+    onRefresh();
+
+    const interval = setInterval(() => {
+      onRefresh();
+    }, 6000); // Re-fetch from Firestore every 6 seconds
+
+    return () => clearInterval(interval);
+  }, [liveUpdates, onRefresh]);
   
   const handleUpdateStatus = async (id: string, newStatus: string) => {
     setStatusUpdatingId(id);
@@ -134,20 +151,46 @@ export default function AdminDashboard({
             Monitor incoming loan requests, review uploaded data, and flag defaulters to secure future lending.
           </p>
         </div>
-        <button 
-          onClick={onRefresh}
-          disabled={isLoading}
-          className="px-4 py-2 bg-zinc-950 text-white hover:bg-zinc-800 disabled:bg-zinc-400 font-medium text-xs rounded transition-all cursor-pointer flex items-center gap-1.5"
-        >
-          {isLoading ? (
-            <>
-              <span className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full"></span>
-              <span>Syncing...</span>
-            </>
-          ) : (
-            <span>Sync Database</span>
-          )}
-        </button>
+        <div className="flex flex-wrap items-center gap-3 self-end md:self-auto">
+          {/* Live Updates Toggle */}
+          <button
+            type="button"
+            onClick={() => setLiveUpdates(!liveUpdates)}
+            className={`px-3.5 py-2 text-xs font-semibold rounded-lg border flex items-center gap-2 transition-all cursor-pointer ${
+              liveUpdates
+                ? "bg-emerald-50 text-emerald-800 border-emerald-200 shadow-xs"
+                : "bg-zinc-50 text-zinc-600 hover:text-zinc-900 border-zinc-200"
+            }`}
+          >
+            <div className="relative flex h-2 w-2">
+              {liveUpdates && (
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              )}
+              <span className={`relative inline-flex rounded-full h-2 w-2 ${liveUpdates ? "bg-emerald-500" : "bg-zinc-300"}`}></span>
+            </div>
+            <Radio className="h-3.5 w-3.5" />
+            <span>Live Updates {liveUpdates ? "(On)" : "(Off)"}</span>
+          </button>
+
+          {/* Sync Database Button */}
+          <button 
+            onClick={onRefresh}
+            disabled={isLoading}
+            className="px-4 py-2 bg-zinc-950 text-white hover:bg-zinc-800 disabled:bg-zinc-400 font-semibold text-xs rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shrink-0 shadow-sm"
+          >
+            {isLoading ? (
+              <>
+                <span className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full"></span>
+                <span>Syncing...</span>
+              </>
+            ) : (
+              <>
+                <RefreshCw className="h-3.5 w-3.5" />
+                <span>Sync Database</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* STATS STRIP */}
