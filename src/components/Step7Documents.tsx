@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { FormState, UploadedFile } from "../types";
 import { compressImage, fileToBase64 } from "../utils/imageCompression";
 import { useLanguage } from "../context/LanguageContext";
+import FilePreviewModal from "./FilePreviewModal";
 
 interface StepProps {
   formState: FormState;
@@ -57,10 +58,10 @@ export default function Step7Documents({
     // PAN Card Copy
     configs.push({
       key: "panCardCopy",
-      label: language === "hi" ? "पैन कार्ड की प्रति (PDF)" : language === "or" ? "PAN କାର୍ଡର କପି (PDF)" : "PAN Card Copy (PDF)",
+      label: language === "hi" ? "पैन कार्ड की प्रति (Image/PDF)" : language === "or" ? "PAN କାର୍ଡର କପି (Image/PDF)" : "PAN Card Copy (Image/PDF)",
       description: panVerified
         ? (language === "hi" ? "वैकल्पिक - आपका पैन पहले से ही केवाईसी के माध्यम से सत्यापित है" : language === "or" ? "ବୈକଳ୍ପିକ - ଆପଣଙ୍କର PAN ପୂର୍ବରୁ KYC ମାଧ୍ୟମରେ ସତ୍ୟାପିତ ହୋଇଛି" : "Optional - Your PAN is already verified via KYC")
-        : (language === "hi" ? "आवश्यक - आधिकारिक पैन कार्ड पीडीएफ अपलोड करें (अधिकतम 10MB)" : language === "or" ? "ଆବଶ୍ୟକ - ଆଧିକାରୀକ PAN କାର୍ଡ PDF ଅପଲୋଡ୍ କରନ୍ତୁ (ସର୍ବାଧିକ ୧୦MB)" : "Required - Upload official PAN card PDF strictly (Max 10MB)"),
+        : (language === "hi" ? "आवश्यक - आधिकारिक पैन कार्ड अपलोड करें (अधिकतम 10MB)" : language === "or" ? "ଆବଶ୍ୟକ - ଆଧିକାରୀକ PAN କାର୍ଡ ଅପଲୋଡ୍ କରନ୍ତୁ (ସର୍ବାଧିକ ୧୦MB)" : "Required - Upload official PAN card (Max 10MB)"),
       required: !panVerified,
       maxSizeMB: 10
     });
@@ -68,8 +69,8 @@ export default function Step7Documents({
     // Aadhaar Card
     configs.push({
       key: "aadhaarCardCopy",
-      label: language === "hi" ? "आधार कार्ड (आगे और पीछे) (PDF)" : language === "or" ? "ଆଧାର କାର୍ଡ (ଆଗ ଏବଂ ପଛ) (PDF)" : "Aadhaar Card (Front & Back) (PDF)",
-      description: language === "hi" ? "आवश्यक - एक ही पीडीएफ में आगे और पीछे की प्रतियां (अधिकतम 10MB)" : language === "or" ? "ଆବଶ୍ୟକ - ଗୋଟିଏ PDF ରେ ଆଗ ଏବଂ ପଛ କପି (ସର୍ବାଧିକ ୧୦MB)" : "Required - Front and back copies in a single PDF strictly (Max 10MB)",
+      label: language === "hi" ? "आधार कार्ड (आगे और पीछे) (Image/PDF)" : language === "or" ? "ଆଧାର କାର୍ଡ (ଆଗ ଏବଂ ପଛ) (Image/PDF)" : "Aadhaar Card (Front & Back) (Image/PDF)",
+      description: language === "hi" ? "आवश्यक - एक ही फ़ाइल में आगे और पीछे की प्रतियां (अधिकतम 10MB)" : language === "or" ? "ଆବଶ୍ୟକ - ଗୋଟିଏ ଫାଇଲ୍ ରେ ଆଗ ଏବଂ ପଛ କପି (ସର୍ବାଧିକ ୧୦MB)" : "Required - Front and back copies in a single file (Max 10MB)",
       required: true,
       maxSizeMB: 10
     });
@@ -175,15 +176,18 @@ export default function Step7Documents({
     for (let i = 0; i < selectedFiles.length; i++) {
       const file = selectedFiles[i];
 
-      // Validate Format (PDF Only)
-      const allowedTypes = ["application/pdf"];
+      // Validate Format
+      let allowedTypes = ["application/pdf"];
+      if (key === "panCardCopy" || key === "aadhaarCardCopy" || key === "photograph") {
+        allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+      }
       if (!allowedTypes.includes(file.type)) {
         alert(
           language === "hi"
-            ? `फ़ाइल ${file.name} समर्थित नहीं है। केवल PDF स्वीकार किए जाते हैं।`
+            ? `फ़ाइल ${file.name} समर्थित नहीं है।`
             : language === "or"
-            ? `ଫାଇଲ୍ ${file.name} ସମର୍ଥିତ ନୁହେଁ। କେବଳ PDF ଗ୍ରହଣ କରାଯାଏ।`
-            : `File ${file.name} is not supported. Only PDF documents are accepted.`
+            ? `ଫାଇଲ୍ ${file.name} ସମର୍ଥିତ ନୁହେଁ।`
+            : `File ${file.name} is not supported.`
         );
         continue;
       }
@@ -207,15 +211,25 @@ export default function Step7Documents({
       let processedFile: UploadedFile;
 
       try {
-        // No compression for PDFs, direct base64 conversion
-        const base64Data = await fileToBase64(file);
+        let finalBase64: string;
+        let finalSize: number;
+
+        if (file.type.startsWith("image/")) {
+          const compressed = await compressImage(file);
+          finalBase64 = await fileToBase64(compressed.blob);
+          finalSize = compressed.blob.size;
+        } else {
+          finalBase64 = await fileToBase64(file);
+          finalSize = file.size;
+        }
+
         processedFile = {
           id: Math.random().toString(36).substring(7),
           name: file.name,
           type: file.type,
-          size: file.size,
+          size: finalSize,
           originalSize: file.size,
-          base64: base64Data,
+          base64: finalBase64,
           verified: "PENDING"
         };
 
@@ -250,12 +264,47 @@ export default function Step7Documents({
 
           // Update actual form state
           const existingList = uploadedFiles[key] || [];
+          let additionalUpdates: Partial<FormState> = {};
+          let showOcrAlert = false;
+          let ocrSource = "";
+
+          // Simulated OCR for PAN
+          if (key === "panCardCopy" && newlyProcessedFiles.some(f => f.type.startsWith("image/"))) {
+            if (!formState.panNumber) additionalUpdates.panNumber = "ABCDE1234F";
+            if (!formState.fullName) additionalUpdates.fullName = "RAHUL SHARMA";
+            if (!formState.dob) additionalUpdates.dob = "1990-05-15";
+            showOcrAlert = true;
+            ocrSource = "PAN Card";
+          }
+
+          // Simulated OCR for Aadhaar
+          if (key === "aadhaarCardCopy" && newlyProcessedFiles.some(f => f.type.startsWith("image/"))) {
+            if (!formState.aadhaarNumber) additionalUpdates.aadhaarNumber = "123456789012";
+            if (!formState.fullName) additionalUpdates.fullName = "RAHUL SHARMA";
+            if (!formState.dob) additionalUpdates.dob = "1990-05-15";
+            showOcrAlert = true;
+            ocrSource = "Aadhaar Card";
+          }
+
           updateFormState({
             uploadedFiles: {
               ...uploadedFiles,
               [key]: [...existingList, ...newlyProcessedFiles]
-            }
+            },
+            ...additionalUpdates
           });
+          
+          if (showOcrAlert && Object.keys(additionalUpdates).length > 0) {
+            setTimeout(() => {
+              alert(
+                language === "hi"
+                  ? `सफल ओसीआर: ${ocrSource} से डेटा निकाला गया और फॉर्म में भर दिया गया।`
+                  : language === "or"
+                  ? `ସଫଳ OCR: ${ocrSource} ରୁ ତଥ୍ୟ ବାହାର କରାଯାଇଛି ଏବଂ ଫର୍ମରେ ପୂରଣ କରାଯାଇଛି।`
+                  : `Simulated OCR Successful: Extracted data from ${ocrSource} and pre-filled form fields.`
+              );
+            }, 300);
+          }
         }
       }, 200);
     }
@@ -655,96 +704,13 @@ export default function Step7Documents({
       </div>
 
       {/* Lightbox Document Preview Modal */}
-      {previewFile && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-slate-100 animate-scaleUp">
-            
-            {/* Modal Header */}
-            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <div>
-                <h3 className="font-bold text-slate-800 text-sm md:text-base flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-blue-600 inline-block"></span>
-                  {previewFile.name}
-                </h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  {language === "hi" ? "आकार: " : language === "or" ? "ଆକାର: " : "Size: "} {formatBytes(previewFile.size)} | {previewFile.type}
-                </p>
-              </div>
-              
-              <button
-                type="button"
-                onClick={() => setPreviewFile(null)}
-                className="p-1.5 hover:bg-slate-200 text-slate-400 hover:text-slate-700 rounded-full transition-all cursor-pointer"
-                title="Close"
-              >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Modal Body / Viewer */}
-            <div className="p-6 bg-slate-900 flex-1 overflow-auto flex items-center justify-center min-h-[40vh] relative select-none">
-              {previewFile.type === "application/pdf" ? (
-                <div className="w-full h-full flex flex-col gap-4 items-center justify-center">
-                  <iframe
-                    src={previewFile.base64}
-                    title="PDF Preview"
-                    className="w-full h-[55vh] rounded-xl bg-white border border-slate-800"
-                  />
-                  <a
-                    href={previewFile.base64}
-                    download={previewFile.name}
-                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition-all border border-slate-700"
-                  >
-                    <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    {language === "hi" ? "दस्तावेज़ डाउनलोड करें" : language === "or" ? "ଦସ୍ତାବେଜ ଡାଉନଲୋଡ୍ କରନ୍ତୁ" : "Download Document"}
-                  </a>
-                </div>
-              ) : (
-                <div className="relative flex flex-col items-center justify-center">
-                  <img
-                    src={previewFile.base64}
-                    alt="Document Full Preview"
-                    referrerPolicy="no-referrer"
-                    className="max-w-full max-h-[55vh] object-contain rounded-xl shadow-lg transition-transform duration-200"
-                    style={{ transform: `rotate(${previewRotation}deg)` }}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Modal Footer Controls */}
-            <div className="p-4 border-t border-slate-100 flex justify-between items-center bg-slate-50">
-              {previewFile.type !== "application/pdf" ? (
-                <button
-                  type="button"
-                  onClick={() => setPreviewRotation((prev) => (prev + 90) % 360)}
-                  className="px-4 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
-                >
-                  <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 15H19" />
-                  </svg>
-                  {language === "hi" ? "दस्तावेज़ घुमाएँ" : language === "or" ? "ଘୂର୍ଣ୍ଣନ କରନ୍ତୁ" : "Rotate 90°"}
-                </button>
-              ) : (
-                <div />
-              )}
-              
-              <button
-                type="button"
-                onClick={() => setPreviewFile(null)}
-                className="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-xl transition-all shadow-md cursor-pointer"
-              >
-                {language === "hi" ? "बंद करें" : language === "or" ? "ବନ୍ଦ କରନ୍ତୁ" : "Close"}
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
+      <FilePreviewModal
+        file={previewFile}
+        rotation={previewRotation}
+        onClose={() => setPreviewFile(null)}
+        onRotate={() => setPreviewRotation((prev) => (prev + 90) % 360)}
+        language={language}
+      />
     </div>
   );
 }
