@@ -38,6 +38,7 @@ import Step8Review from "./components/Step8Review";
 import AdminDashboard from "./components/AdminDashboard";
 import LoginPortal from "./components/LoginPortal";
 import AdminLoginPortal from "./components/AdminLoginPortal";
+import ApplicationStatusView from "./components/ApplicationStatusView";
 
 export default function App() {
   const { language, setLanguage, t, languages } = useLanguage();
@@ -50,6 +51,7 @@ export default function App() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [globalSuccess, setGlobalSuccess] = useState(false);
   const [successRefId, setSuccessRefId] = useState("");
+  const [submittedStatus, setSubmittedStatus] = useState<string | null>(null);
 
   // Save/Notification states
   const [toastMessage, setToastMessage] = useState("");
@@ -102,8 +104,9 @@ export default function App() {
           if (app) {
             setToastMessage("Synced existing application from secure cloud database!");
             setFormState(app);
-            if (app.status === "APPROVED" || app.status === "REJECTED" || app.status === "PRE-APPROVED") {
+            if (app.status) {
               setSuccessRefId(app.id);
+              setSubmittedStatus(app.status);
               setGlobalSuccess(true);
             }
             setTimeout(() => setToastMessage(""), 4000);
@@ -558,6 +561,7 @@ export default function App() {
     setTimeout(() => setToastMessage(""), 4000);
 
     setSuccessRefId(uniqueId);
+    setSubmittedStatus("UNDER_VERIFICATION"); // Default status upon submission
     setGlobalSuccess(true);
     
     // Trigger success confetti animation
@@ -934,69 +938,19 @@ export default function App() {
             currentUser={currentUser}
           />
         ) : globalSuccess ? (
-          <div className="bg-white border border-zinc-200 rounded-xl p-8 text-center max-w-xl mx-auto space-y-6 my-12 animate-fadeIn" id="success-portal">
-            <div className="w-12 h-12 bg-zinc-50 text-zinc-900 rounded-full flex items-center justify-center mx-auto border border-zinc-200">
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            
-            <div className="space-y-2">
-              <h2 className="text-xl font-semibold text-zinc-900 tracking-tight">{t("applicationSubmitted")}</h2>
-              <p className="text-sm text-zinc-500">{t("submittedDesc")}</p>
-            </div>
-            
-            <div className="bg-zinc-50 border border-zinc-200 rounded p-4 inline-block font-mono text-center">
-              <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-medium">{t("refIdLabel")}</span>
-              <p className="text-base font-medium text-zinc-950 mt-1">{successRefId}</p>
-            </div>
-
-            <div className="border-t border-zinc-100 pt-6 space-y-4">
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                {language === "hi"
-                  ? "आरबीआई डिजिटल लेंडिंग गाइडलाइन्स (सितंबर 2022) के अनुसार, आपकी अंतिम पुनर्भुगतान संरचना, कूलिंग-ऑफ प्रावधानों और शिकायतों के विवरण से युक्त एक प्रमुख तथ्य विवरण (केएफएस) आपके सत्यापित ईमेल पर भेज दिया गया है।"
-                  : language === "or"
-                  ? "ଆରବିଆଇ ଡିଜିଟାଲ୍ ଋଣ ନିର୍ଦ୍ଦେଶାବଳୀ (ସେପ୍ଟେମ୍ବର ୨୦୨୨) ଅନୁଯାୟୀ, ଆପଣଙ୍କର ଚୂଡ଼ାନ୍ତ ପରିଶୋଧ ଗଠନ, କୁଲିଂ-ଅଫ୍ ବ୍ୟବସ୍ଥା ଏବଂ ଅଭିଯୋଗ ବିବରଣୀ ସମ୍ବଳିତ ଏକ କି-ଫ୍ୟାକ୍ଟ ଷ୍ଟେଟମେଣ୍ଟ (KFS) ଆପଣଙ୍କର ଯାଞ୍ଚ ହୋଇଥିବା ଇମେଲକୁ ପଠାଯାଇଛି।"
-                  : "As per the **RBI Digital Lending Guidelines (September 2022)**, a Key Fact Statement (KFS) containing your final repayment structure, cooling-off provisions, and grievances details has been dispatched to your verified email."}
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const dataUri = "data:application/pdf;base64,JVBERi0xLjQKJ..." // Mock download
-                    const link = document.createElement("a");
-                    link.href = dataUri;
-                    link.download = `UtkalCred_Summary_${successRefId}.pdf`;
-                    link.click();
-                  }}
-                  className="px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-50 font-medium text-xs rounded transition-colors cursor-pointer"
-                >
-                  {t("downloadPDF")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => window.print()}
-                  className="px-5 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 border border-zinc-200 font-medium text-xs rounded transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                  title="Print Application Summary"
-                >
-                  <Printer className="h-3.5 w-3.5 text-zinc-600" />
-                  <span>{language === "hi" ? "प्रिंट करें" : language === "or" ? "ପ୍ରିଣ୍ଟ୍ କରନ୍ତୁ" : "Print Summary"}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setGlobalSuccess(false);
-                    setFormState(INITIAL_FORM_STATE);
-                    setCurrentStep(1);
-                  }}
-                  className="px-5 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-medium text-xs rounded transition-colors cursor-pointer"
-                >
-                  {t("applyNew")}
-                </button>
-              </div>
-            </div>
-          </div>
+          <ApplicationStatusView 
+            referenceId={successRefId}
+            status={submittedStatus}
+            language={language}
+            onPrint={() => window.print()}
+            onDownloadKFS={() => {
+              const dataUri = "data:application/pdf;base64,JVBERi0xLjQKJ..." // Mock download
+              const link = document.createElement("a");
+              link.href = dataUri;
+              link.download = `LendSwift_Summary_${successRefId}.pdf`;
+              link.click();
+            }}
+          />
         ) : (
           
           /* ACTIVE APPLICATION FLOW */

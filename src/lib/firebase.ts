@@ -104,7 +104,7 @@ export async function saveApplication(id: string, formState: any) {
       ...formState,
       uploadedFiles: sanitizedUploadedFiles,
       id,
-      status: "PRE-APPROVED",
+      status: "UNDER_VERIFICATION",
       createdAt: new Date().toISOString(),
       isDefaulter: false // default false
     };
