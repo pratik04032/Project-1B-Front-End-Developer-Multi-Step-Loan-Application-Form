@@ -68,6 +68,23 @@ input.pr-12 {
   padding-right: 3rem !important;
 }
 
+select.border-none {
+  border: none !important;
+  box-shadow: none !important;
+  background-image: none !important;
+  padding-left: 0.25rem !important;
+  padding-right: 1.5rem !important;
+  padding-top: 0.25rem !important;
+  padding-bottom: 0.25rem !important;
+  height: auto !important;
+  background-color: transparent !important;
+}
+select.border-none:hover, select.border-none:focus {
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+
 input:hover, select:hover, textarea:hover {
   border-color: #a1a1aa !important; /* zinc-400 */
 }

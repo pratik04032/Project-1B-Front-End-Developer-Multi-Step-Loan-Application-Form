@@ -3,6 +3,7 @@ import { FormState, LoanType } from "../types";
 import { formatINR } from "../utils/validators";
 import { Calculator } from "lucide-react";
 import LoanCalculatorSidebar from "./LoanCalculatorSidebar";
+import { useLanguage } from "../context/LanguageContext";
 
 interface StepProps {
   formState: FormState;
@@ -17,6 +18,7 @@ export default function Step1LoanType({
   errors,
   registerBlur
 }: StepProps) {
+  const { t, language } = useLanguage();
   const { loanType, loanAmount, loanTenure, loanPurpose, referralCode } = formState;
   const [showCalculator, setShowCalculator] = useState(false);
 
@@ -95,12 +97,42 @@ export default function Step1LoanType({
       ? ["New Home Purchase", "Plot Purchase", "Home Construction", "Home Extension"]
       : ["Working Capital", "Equipment Purchase", "Business Expansion", "Inventory Buying"];
 
+  const formatTenureLabel = (months: number) => {
+    if (language === "hi") {
+      return `${months} महीने (${months / 12} ${months / 12 === 1 ? "वर्ष" : "वर्ष"})`;
+    }
+    if (language === "or") {
+      return `${months} ମାସ (${months / 12} ${months / 12 === 1 ? "ବର୍ଷ" : "ବର୍ଷ"})`;
+    }
+    return `${months} months (${months / 12} ${months / 12 === 1 ? "year" : "years"})`;
+  };
+
+  const translatePurpose = (purpose: string) => {
+    const map: Record<string, Record<string, string>> = {
+      "Medical Emergency": { hi: "चिकित्सा आपातकाल", or: "ଡାକ୍ତରୀ ଜରୁରୀକାଳୀନ ପରିସ୍ଥିତି" },
+      "Wedding Expense": { hi: "शादी का खर्च", or: "ବିବାହ ଖର୍ଚ୍ଚ" },
+      "Education": { hi: "शिक्षा", or: "ଶିକ୍ଷା" },
+      "Home Renovation": { hi: "घर का नवीनीकरण", or: "ଘର ମରାମତି / ନବୀକରଣ" },
+      "Travel": { hi: "यात्रा", or: "ଯାତ୍ରା" },
+      "Debt Consolidation": { hi: "ऋण समेकन", or: "ଋଣ ପରିଶୋଧ / ସମନ୍ୱୟ" },
+      "New Home Purchase": { hi: "नया घर खरीदना", or: "ନୂଆ ଘର କିଣିବା" },
+      "Plot Purchase": { hi: "प्लॉट खरीदना", or: "ଜମି କିଣିବା" },
+      "Home Construction": { hi: "घर का निर्माण", or: "ଘର ତୋଳିବା / ନିର୍ମାଣ" },
+      "Home Extension": { hi: "घर का विस्तार", or: "ଘର ସମ୍ପ୍ରସାରଣ" },
+      "Working Capital": { hi: "कार्यशील पूंजी", or: "କାର୍ଯ୍ୟକାରୀ ପୁଞ୍ଜି" },
+      "Equipment Purchase": { hi: "उपकरण खरीद", or: "ଯନ୍ତ୍ରପାତି କିଣିବା" },
+      "Business Expansion": { hi: "व्यवसाय विस्तार", or: "ବ୍ୟବସାୟ ସମ୍ପ୍ରସାରଣ" },
+      "Inventory Buying": { hi: "इन्वेंटरी खरीदना", or: "ମାଲ୍ / ସାମଗ୍ରୀ କିଣିବା" }
+    };
+    return map[purpose]?.[language] || purpose;
+  };
+
   return (
     <div className="space-y-6" id="step1-container">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-100 pb-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Loan Product &amp; Amount</h2>
-          <p className="text-sm text-slate-500">Select your loan type, requested amount, and desired tenure.</p>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">{t("step1Title")}</h2>
+          <p className="text-sm text-slate-500">{t("step1Desc")}</p>
         </div>
         <div>
           <button
@@ -113,7 +145,7 @@ export default function Step1LoanType({
             }`}
           >
             <Calculator className="h-3.5 w-3.5" />
-            {showCalculator ? "Hide Calculator Sandbox" : "Show Calculator Sandbox"}
+            {showCalculator ? t("calcHeader") : t("calcHeader")}
           </button>
         </div>
       </div>
@@ -122,16 +154,16 @@ export default function Step1LoanType({
         <div className={showCalculator ? "lg:col-span-7 space-y-6" : "space-y-6"}>
           {/* Loan Type Selector */}
       <div className="space-y-3">
-        <label className="block text-sm font-medium text-slate-700">Loan Type *</label>
+        <label className="block text-sm font-medium text-slate-700">{t("loanType")} *</label>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4" role="radiogroup" aria-label="Select loan type">
           {(["Personal", "Home", "Business"] as LoanType[]).map((type) => {
             const isSelected = loanType === type;
             const desc =
               type === "Personal"
-                ? "Up to ₹10 Lakhs (12-60 months)"
+                ? (language === "hi" ? "₹10 लाख तक (12-60 महीने)" : language === "or" ? "₹୧୦ ଲକ୍ଷ ପର୍ଯ୍ୟନ୍ତ (୧୨-୬୦ ମାସ)" : "Up to ₹10 Lakhs (12-60 months)")
                 : type === "Home"
-                ? "Up to ₹1 Crore (60-360 months)"
-                : "Up to ₹50 Lakhs (12-120 months)";
+                ? (language === "hi" ? "₹1 करोड़ तक (60-360 महीने)" : language === "or" ? "₹୧ କୋଟି ପର୍ଯ୍ୟନ୍ତ (୬୦-୩୬୦ ମାସ)" : "Up to ₹1 Crore (60-360 months)")
+                : (language === "hi" ? "₹50 लाख तक (12-120 महीने)" : language === "or" ? "₹୫୦ ଲକ୍ଷ ପର୍ଯ୍ୟନ୍ତ (୧୨-୧୨୦ ମାସ)" : "Up to ₹50 Lakhs (12-120 months)");
             return (
               <button
                 key={type}
@@ -147,7 +179,7 @@ export default function Step1LoanType({
                 aria-checked={isSelected}
               >
                 <span className={`text-base font-semibold ${isSelected ? "text-blue-700" : "text-slate-800"}`}>
-                  {type} Loan
+                  {t(type)}
                 </span>
                 <span className="text-xs text-slate-500 mt-1">{desc}</span>
                 {isSelected && (
@@ -166,7 +198,7 @@ export default function Step1LoanType({
       <div className="space-y-2">
         <div className="flex justify-between items-center">
           <label htmlFor="loanAmount" className="text-sm font-medium text-slate-700">
-            Requested Loan Amount *
+            {t("loanAmount")} *
           </label>
           <span className="text-xs text-slate-500">
             Min: {formatINR(minAmount)} | Max: {formatINR(maxAmount)}
@@ -205,7 +237,7 @@ export default function Step1LoanType({
       {/* Loan Tenure Dropdown */}
       <div className="space-y-2">
         <label htmlFor="loanTenure" className="block text-sm font-medium text-slate-700">
-          Loan Tenure (Months) *
+          {t("loanTenure")} *
         </label>
         <select
           id="loanTenure"
@@ -219,10 +251,10 @@ export default function Step1LoanType({
           aria-invalid={errors.loanTenure ? "true" : "false"}
           aria-describedby={errors.loanTenure ? "loanTenure-error" : undefined}
         >
-          <option value="" disabled>Select Tenure</option>
+          <option value="" disabled>{language === "hi" ? "अवधि चुनें" : language === "or" ? "ଅବଧି ଚୟନ କରନ୍ତୁ" : "Select Tenure"}</option>
           {tenureOptions.map((months) => (
             <option key={months} value={months}>
-              {months} months ({months / 12} {months / 12 === 1 ? "year" : "years"})
+              {formatTenureLabel(months)}
             </option>
           ))}
         </select>
@@ -237,7 +269,7 @@ export default function Step1LoanType({
       {/* Loan Purpose Dropdown */}
       <div className="space-y-2">
         <label htmlFor="loanPurpose" className="block text-sm font-medium text-slate-700">
-          Purpose of Loan *
+          {t("loanPurpose")} *
         </label>
         <select
           id="loanPurpose"
@@ -251,10 +283,10 @@ export default function Step1LoanType({
           aria-invalid={errors.loanPurpose ? "true" : "false"}
           aria-describedby={errors.loanPurpose ? "loanPurpose-error" : undefined}
         >
-          <option value="" disabled>Select Purpose</option>
+          <option value="" disabled>{language === "hi" ? "उद्देश्य चुनें" : language === "or" ? "ଉଦ୍ଦେଶ୍ୟ ଚୟନ କରନ୍ତୁ" : "Select Purpose"}</option>
           {purposeOptions.map((purpose) => (
             <option key={purpose} value={purpose}>
-              {purpose}
+              {translatePurpose(purpose)}
             </option>
           ))}
         </select>
@@ -270,9 +302,11 @@ export default function Step1LoanType({
       <div className="space-y-2">
         <div className="flex justify-between items-center">
           <label htmlFor="referralCode" className="text-sm font-medium text-slate-700">
-            Referral Code (Optional)
+            {t("referralCode")}
           </label>
-          <span className="text-xs text-slate-400">6-10 alphanumeric characters</span>
+          <span className="text-xs text-slate-400">
+            {language === "hi" ? "6-10 अल्फ़ान्यूमेरिक वर्ण" : language === "or" ? "୬-୧୦ ଅକ୍ଷର କିମ୍ବା ସଂଖ୍ୟା" : "6-10 alphanumeric characters"}
+          </span>
         </div>
         <input
           type="text"
@@ -281,7 +315,7 @@ export default function Step1LoanType({
           value={referralCode}
           onChange={(e) => updateFormState({ referralCode: e.target.value.toUpperCase() })}
           onBlur={() => registerBlur("referralCode")}
-          placeholder="e.g. LEND100"
+          placeholder={language === "hi" ? "जैसे: LEND100" : language === "or" ? "ଉଦାହରଣ: LEND100" : "e.g. LEND100"}
           className={`block w-full px-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
             errors.referralCode ? "border-red-500" : "border-slate-200 hover:border-slate-300"
           }`}

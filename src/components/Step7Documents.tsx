@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FormState, UploadedFile } from "../types";
 import { compressImage, fileToBase64 } from "../utils/imageCompression";
+import { useLanguage } from "../context/LanguageContext";
 
 interface StepProps {
   formState: FormState;
@@ -23,6 +24,7 @@ export default function Step7Documents({
   errors,
   registerBlur
 }: StepProps) {
+  const { t, language } = useLanguage();
   const {
     loanType,
     loanAmount,
@@ -53,10 +55,10 @@ export default function Step7Documents({
     // PAN Card Copy
     configs.push({
       key: "panCardCopy",
-      label: "PAN Card Copy",
+      label: language === "hi" ? "पैन कार्ड की प्रति" : language === "or" ? "PAN କାର୍ଡର କପି" : "PAN Card Copy",
       description: panVerified
-        ? "Optional - Your PAN is already verified via KYC"
-        : "Required - Upload official PAN card image or PDF (Max 5MB)",
+        ? (language === "hi" ? "वैकल्पिक - आपका पैन पहले से ही केवाईसी के माध्यम से सत्यापित है" : language === "or" ? "ବୈକଳ୍ପିକ - ଆପଣଙ୍କର PAN ପୂର୍ବରୁ KYC ମାଧ୍ୟମରେ ସତ୍ୟାପିତ ହୋଇଛି" : "Optional - Your PAN is already verified via KYC")
+        : (language === "hi" ? "आवश्यक - आधिकारिक पैन कार्ड चित्र या पीडीएफ अपलोड करें (अधिकतम 5MB)" : language === "or" ? "ଆବଶ୍ୟକ - ଆଧିକାରୀକ PAN କାର୍ଡ ଚିତ୍ର କିମ୍ବା PDF ଅପଲୋଡ୍ କରନ୍ତୁ (ସର୍ବାଧିକ ୫MB)" : "Required - Upload official PAN card image or PDF (Max 5MB)"),
       required: !panVerified,
       maxSizeMB: 5
     });
@@ -64,8 +66,8 @@ export default function Step7Documents({
     // Aadhaar Card
     configs.push({
       key: "aadhaarCardCopy",
-      label: "Aadhaar Card (Front & Back)",
-      description: "Required - Front and back copies in a single PDF or image (Max 5MB)",
+      label: language === "hi" ? "आधार कार्ड (आगे और पीछे)" : language === "or" ? "ଆଧାର କାର୍ଡ (ଆଗ ଏବଂ ପଛ)" : "Aadhaar Card (Front & Back)",
+      description: language === "hi" ? "आवश्यक - एक ही पीडीएफ या चित्र में आगे और पीछे की प्रतियां (अधिकतम 5MB)" : language === "or" ? "ଆବଶ୍ୟକ - ଗୋଟିଏ PDF କିମ୍ବା ଚିତ୍ରରେ ଆଗ ଏବଂ ପଛ କପି (ସର୍ବାଧିକ ୫MB)" : "Required - Front and back copies in a single PDF or image (Max 5MB)",
       required: true,
       maxSizeMB: 5
     });
@@ -74,16 +76,16 @@ export default function Step7Documents({
     if (isSalaried) {
       configs.push({
         key: "salarySlips",
-        label: "Salary Slips (Last 3 Months)",
-        description: "Required - Monthly payslips from your current employer (Max 5MB each)",
+        label: language === "hi" ? "वेतन पर्ची (पिछले 3 महीने)" : language === "or" ? "ଦରମା ସ୍ଲିପ୍ (ଶେଷ ୩ ମାସ)" : "Salary Slips (Last 3 Months)",
+        description: language === "hi" ? "आवश्यक - आपके वर्तमान नियोक्ता से मासिक वेतन पर्ची (प्रत्येक अधिकतम 5MB)" : language === "or" ? "ଆବଶ୍ୟକ - ଆପଣଙ୍କର ବର୍ତ୍ତମାନର ନିଯୁକ୍ତିଦାତାଙ୍କ ମାସିକ ଦରମା ସ୍ଲିପ୍ (ପ୍ରତ୍ୟେକ ସର୍ବାଧିକ ୫MB)" : "Required - Monthly payslips from your current employer (Max 5MB each)",
         required: true,
         maxSizeMB: 5
       });
     } else {
       configs.push({
         key: "itr",
-        label: "Income Tax Returns (Last 2 Years)",
-        description: "Required - Acknowledged copy of ITR-V for the last two financial years (Max 5MB each)",
+        label: language === "hi" ? "आयकर रिटर्न (पिछले 2 वर्ष)" : language === "or" ? "ଆୟକର ରିଟର୍ଣ୍ଣ (ଶେଷ ୨ ବର୍ଷ)" : "Income Tax Returns (Last 2 Years)",
+        description: language === "hi" ? "आवश्यक - पिछले दो वित्तीय वर्षों के लिए आईटीआर-वी की स्वीकृत प्रति (प्रत्येक अधिकतम 5MB)" : language === "or" ? "ଆବଶ୍ୟକ - ଶେଷ ଦୁଇଟି ଆର୍ଥିକ ବର୍ଷ ପାଇଁ ITR-V ର ସ୍ୱୀକୃତ କପି (ପ୍ରତ୍ୟେକ ସର୍ବାଧିକ ୫MB)" : "Required - Acknowledged copy of ITR-V for the last two financial years (Max 5MB each)",
         required: true,
         maxSizeMB: 5
       });
@@ -92,8 +94,8 @@ export default function Step7Documents({
     // Bank Statements
     configs.push({
       key: "bankStatements",
-      label: "Bank Statements (Last 6 Months)",
-      description: "Required - Detailed statement of salary/primary transaction account (Max 10MB)",
+      label: language === "hi" ? "बैंक विवरण (पिछले 6 महीने)" : language === "or" ? "ବ୍ୟାଙ୍କ ବିବରଣୀ (ଶେଷ ୬ ମାସ)" : "Bank Statements (Last 6 Months)",
+      description: language === "hi" ? "आवश्यक - वेतन/प्राथमिक लेनदेन खाते का विस्तृत विवरण (अधिकतम 10MB)" : language === "or" ? "ଆବଶ୍ୟକ - ଦରମା/ପ୍ରାଥମିକ କାରବାର ଆକାଉଣ୍ଟର ବିସ୍ତୃତ ବିବରଣୀ (ସର୍ବାଧିକ ୧୦MB)" : "Required - Detailed statement of salary/primary transaction account (Max 10MB)",
       required: true,
       maxSizeMB: 10
     });
@@ -102,8 +104,8 @@ export default function Step7Documents({
     if (isHome) {
       configs.push({
         key: "propertyDocs",
-        label: "Property & Collateral Documents",
-        description: "Required - Sale deed, tax receipt, or builder buyer agreement (Max 10MB)",
+        label: language === "hi" ? "संपत्ति और संपार्श्विक दस्तावेज" : language === "or" ? "ସମ୍ପତ୍ତି ଏବଂ ବନ୍ଧକ ଦସ୍ତାବେଜ" : "Property & Collateral Documents",
+        description: language === "hi" ? "आवश्यक - बिक्री विलेख, कर रसीद, या बिल्डर खरीदार समझौता (अधिकतम 10MB)" : language === "or" ? "ଆବଶ୍ୟକ - ବିକ୍ରୟ ଦଲିଲ୍, ଟ୍ୟାକ୍ସ ରସିଦ୍, କିମ୍ବା ବିଲ୍ଡର କ୍ରେତା ଚୁକ୍ତିପତ୍ର (ସର୍ବାଧିକ ୧୦MB)" : "Required - Sale deed, tax receipt, or builder buyer agreement (Max 10MB)",
         required: true,
         maxSizeMB: 10
       });
@@ -113,8 +115,8 @@ export default function Step7Documents({
     if (isBusiness) {
       configs.push({
         key: "businessRegistration",
-        label: "Business Registration Certificate",
-        description: "Required - GST certificate, MSME Udyam, or Partnership Deed (Max 5MB)",
+        label: language === "hi" ? "व्यवसाय पंजीकरण प्रमाणपत्र" : language === "or" ? "ବ୍ୟବସାୟ ପଞ୍ଜୀକରଣ ପ୍ରମାଣପତ୍ର" : "Business Registration Certificate",
+        description: language === "hi" ? "आवश्यक - जीएसटी प्रमाणपत्र, एमएसएमई उद्यम, या साझेदारी विलेख (अधिकतम 5MB)" : language === "or" ? "ଆବଶ୍ୟକ - GST ପ୍ରମାଣପତ୍ର, MSME ଉଦ୍ୟମ, କିମ୍ବା ଅଂଶୀଦାର ଦଲିଲ୍ (ସର୍ବାଧିକ ୫MB)" : "Required - GST certificate, MSME Udyam, or Partnership Deed (Max 5MB)",
         required: true,
         maxSizeMB: 5
       });
@@ -122,8 +124,8 @@ export default function Step7Documents({
       if (employmentType === "Business Owner") {
         configs.push({
           key: "gstReturns",
-          label: "GST Returns (Last 4 Quarters)",
-          description: "Required - GSTR-1 or GSTR-3B filings (Max 5MB each)",
+          label: language === "hi" ? "जीएसटी रिटर्न (पिछले 4 तिमाहियों)" : language === "or" ? "GST ରିଟର୍ଣ୍ଣ (ଶେଷ ୪ ତ୍ରୈମାସିକ)" : "GST Returns (Last 4 Quarters)",
+          description: language === "hi" ? "आवश्यक - जीएसटीआर-1 या जीएसटीआर-3बी फाइलिंग (प्रत्येक अधिकतम 5MB)" : language === "or" ? "ଆବଶ୍ୟକ - GSTR-1 କିମ୍ବା GSTR-3B ଫାଇଲିଂ (ପ୍ରତ୍ୟେକ ସର୍ବାଧିକ ୫MB)" : "Required - GSTR-1 or GSTR-3B filings (Max 5MB each)",
           required: true,
           maxSizeMB: 5
         });
@@ -133,8 +135,8 @@ export default function Step7Documents({
     // Photograph
     configs.push({
       key: "photograph",
-      label: "Passport Size Photograph",
-      description: "Required - Recent colored passport size photo with a clear background (Max 2MB)",
+      label: language === "hi" ? "पासपोर्ट आकार का फोटो" : language === "or" ? "ପାସପୋର୍ଟ ସାଇଜ୍ ଫଟୋଗ୍ରାଫ୍" : "Passport Size Photograph",
+      description: language === "hi" ? "आवश्यक - स्पष्ट पृष्ठभूमि के साथ हालिया रंगीन पासपोर्ट आकार की फोटो (अधिकतम 2MB)" : language === "or" ? "ଆବଶ୍ୟକ - ସ୍ପଷ୍ଟ ପୃଷ୍ଠଭୂମି ସହିତ ସାମ୍ପ୍ରତିକ ରଙ୍ଗୀନ ପାସପୋର୍ଟ ସାଇଜ୍ ଫଟୋ (ସର୍ବାଧିକ ୨MB)" : "Required - Recent colored passport size photo with a clear background (Max 2MB)",
       required: true,
       maxSizeMB: 2
     });
@@ -156,7 +158,13 @@ export default function Step7Documents({
     // Check count constraint: max 3 files per type
     const currentFiles = uploadedFiles[key] || [];
     if (currentFiles.length + selectedFiles.length > 3) {
-      alert("Maximum 3 files are allowed per document category.");
+      alert(
+        language === "hi"
+          ? "प्रति दस्तावेज़ श्रेणी में अधिकतम 3 फ़ाइलों की अनुमति है।"
+          : language === "or"
+          ? "ଦସ୍ତାବେଜ ଶ୍ରେଣୀ ପ୍ରତି ସର୍ବାଧିକ ୩ଟି ଫାଇଲ୍ ପାଇଁ ଅନୁମତି ଅଛି।"
+          : "Maximum 3 files are allowed per document category."
+      );
       return;
     }
 
@@ -171,14 +179,26 @@ export default function Step7Documents({
       // Validate Format (PDF, JPG, PNG)
       const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
       if (!allowedTypes.includes(file.type)) {
-        alert(`File ${file.name} is not supported. Only PDF, JPG, and PNG are accepted.`);
+        alert(
+          language === "hi"
+            ? `फ़ाइल ${file.name} समर्थित नहीं है। केवल PDF, JPG और PNG स्वीकार किए जाते हैं।`
+            : language === "or"
+            ? `ଫାଇଲ୍ ${file.name} ସମର୍ଥିତ ନୁହେଁ। କେବଳ PDF, JPG ଏବଂ PNG ଗ୍ରହଣ କରାଯାଏ।`
+            : `File ${file.name} is not supported. Only PDF, JPG, and PNG are accepted.`
+        );
         continue;
       }
 
       // Validate File Size
       const maxSizeBytes = maxSizeMB * 1024 * 1024;
       if (file.size > maxSizeBytes) {
-        alert(`File ${file.name} exceeds the maximum allowed size of ${maxSizeMB}MB.`);
+        alert(
+          language === "hi"
+            ? `फ़ाइल ${file.name} अधिकतम अनुमत आकार ${maxSizeMB}MB से अधिक है।`
+            : language === "or"
+            ? `ଫାଇଲ୍ ${file.name} ସର୍ବାଧିକ ଅନୁମତିତ ଆକାର ${maxSizeMB}MB ରୁ ଅଧିକ ଅଟେ।`
+            : `File ${file.name} exceeds the maximum allowed size of ${maxSizeMB}MB.`
+        );
         continue;
       }
 
@@ -219,7 +239,13 @@ export default function Step7Documents({
         newlyProcessedFiles.push(processedFile);
       } catch (err) {
         console.error("File processing failed:", err);
-        alert(`Failed to process ${file.name}`);
+        alert(
+          language === "hi"
+            ? `फ़ाइल ${file.name} को संसाधित करने में विफल`
+            : language === "or"
+            ? `ଫାଇଲ୍ ${file.name} ପ୍ରକ୍ରିୟାକରଣ କରିବାରେ ବିଫଳ`
+            : `Failed to process ${file.name}`
+        );
       }
     }
 
@@ -402,8 +428,12 @@ export default function Step7Documents({
   return (
     <div className="space-y-6" id="step7-container">
       <div>
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight">Documents &amp; E-Signature</h2>
-        <p className="text-sm text-slate-500">Upload high-resolution scans of your documents and capture your electronic signature.</p>
+        <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+          {language === "hi" ? "दस्तावेज और ई-हस्ताक्षर" : language === "or" ? "ଦସ୍ତାବେଜ ଏବଂ ଇ-ଦସ୍ତଖତ" : "Documents & E-Signature"}
+        </h2>
+        <p className="text-sm text-slate-500">
+          {language === "hi" ? "अपने दस्तावेजों के उच्च-रिज़ॉल्यूशन स्कैन अपलोड करें और अपना इलेक्ट्रॉनिक हस्ताक्षर दर्ज करें।" : language === "or" ? "ଆପଣଙ୍କ ଦସ୍ତାବେଜଗୁଡ଼ିକର ଉଚ୍ଚ-ରେଜୋଲ୍ୟୁସନ ସ୍କାନ ଅପଲୋଡ୍ କରନ୍ତୁ ଏବଂ ଆପଣଙ୍କର ଇଲେକ୍ଟ୍ରୋନିକ ଦସ୍ତଖତ ପ୍ରଦାନ କରନ୍ତୁ।" : "Upload high-resolution scans of your documents and capture your electronic signature."}
+        </p>
       </div>
 
       {/* Dynamic Documents List */}
@@ -427,7 +457,7 @@ export default function Step7Documents({
                 </div>
                 {hasFiles && (
                   <span className="text-[10px] font-semibold text-green-700 bg-green-50 border border-green-100 rounded px-2 py-0.5">
-                    {files.length} File(s) Added
+                    {files.length} {language === "hi" ? "फ़ाइलें जोड़ी गईं" : language === "or" ? "ଫାଇଲ୍ ଯୋଡାଗଲା" : "File(s) Added"}
                   </span>
                 )}
               </div>
@@ -451,16 +481,27 @@ export default function Step7Documents({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
                 <p className="text-xs text-slate-600 font-semibold mt-2">
-                  Drag &amp; Drop or <span className="text-blue-600 hover:underline">Browse files</span>
+                  {language === "hi" ? "खींचें और छोड़ें या " : language === "or" ? "ଡ୍ରାଗ୍ ଏବଂ ଡ୍ରପ୍ କରନ୍ତୁ କିମ୍ବା " : "Drag & Drop or "}
+                  <span className="text-blue-600 hover:underline">
+                    {language === "hi" ? "फ़ाइलें ब्राउज़ करें" : language === "or" ? "ଫାଇଲ୍ ବ୍ରାଉଜ୍ କରନ୍ତୁ" : "Browse files"}
+                  </span>
                 </p>
-                <p className="text-[10px] text-slate-400 mt-1">Accepts PDF, JPG, PNG only (Max: {doc.maxSizeMB}MB)</p>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  {language === "hi" 
+                    ? `केवल PDF, JPG, PNG स्वीकार्य (अधिकतम: ${doc.maxSizeMB}MB)` 
+                    : language === "or" 
+                    ? `କେବଳ PDF, JPG, PNG ଗ୍ରହଣୀୟ (ସର୍ବାଧିକ: ${doc.maxSizeMB}MB)` 
+                    : `Accepts PDF, JPG, PNG only (Max: ${doc.maxSizeMB}MB)`}
+                </p>
               </div>
 
               {/* Upload Progress Bar */}
               {progress !== undefined && (
                 <div className="space-y-1.5 animate-fadeIn">
                   <div className="flex justify-between text-[10px] font-semibold text-blue-700">
-                    <span>Compressing &amp; uploading...</span>
+                    <span>
+                      {language === "hi" ? "संकुचित और अपलोड किया जा रहा है..." : language === "or" ? "ସଙ୍କୁଚିତ ଏବଂ ଅପଲୋଡ୍ ହେଉଛି..." : "Compressing & uploading..."}
+                    </span>
                     <span>{progress}%</span>
                   </div>
                   <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
@@ -507,7 +548,7 @@ export default function Step7Documents({
                             {/* Display compression gains if available */}
                             {file.compressedSize && file.originalSize > file.compressedSize && (
                               <span className="text-[9px] text-green-700 font-semibold bg-green-50 px-1 py-0.5 rounded w-fit">
-                                Compressed ({Math.round(((file.originalSize - file.compressedSize) / file.originalSize) * 100)}% saved)
+                                {language === "hi" ? "संकुचित" : language === "or" ? "ସଙ୍କୁଚିତ" : "Compressed"} ({Math.round(((file.originalSize - file.compressedSize) / file.originalSize) * 100)}% saved)
                               </span>
                             )}
                           </div>
@@ -546,15 +587,23 @@ export default function Step7Documents({
       <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
         <div className="flex justify-between items-center">
           <div>
-            <h3 className="text-sm font-semibold text-slate-800">Primary Applicant Digital Signature *</h3>
-            <p className="text-xs text-slate-500 mt-1">Draw your signature directly onto the secure pad below. The drawing must match your identity.</p>
+            <h3 className="text-sm font-semibold text-slate-800">
+              {language === "hi" ? "मुख्य आवेदक का डिजिटल हस्ताक्षर *" : language === "or" ? "ମୁଖ୍ୟ ଆବେଦନକାରୀଙ୍କ ଡିଜିଟାଲ୍ ଦସ୍ତଖତ *" : "Primary Applicant Digital Signature *"}
+            </h3>
+            <p className="text-xs text-slate-500 mt-1">
+              {language === "hi" 
+                ? "नीचे दिए गए सुरक्षित पैड पर सीधे अपना हस्ताक्षर बनाएं। ड्राइंग आपकी पहचान से मेल खानी चाहिए।" 
+                : language === "or" 
+                ? "ତଳେ ଦିଆଯାଇଥିବା ସୁରକ୍ଷିତ ପ୍ୟାଡରେ ସିଧାସଳଖ ଆପଣଙ୍କ ଦସ୍ତଖତ ଆଙ୍କନ୍ତୁ। ଏହା ଆପଣଙ୍କ ପରିଚୟ ସହ ମେଳ ହେବା ଆବଶ୍ୟକ।" 
+                : "Draw your signature directly onto the secure pad below. The drawing must match your identity."}
+            </p>
           </div>
           <button
             type="button"
             onClick={clearCanvas}
             className="text-xs font-semibold text-red-600 hover:text-red-700 hover:underline cursor-pointer"
           >
-            Clear Signature
+            {language === "hi" ? "हस्ताक्षर साफ करें" : language === "or" ? "ଦସ୍ତଖତ ସଫା କରନ୍ତୁ" : "Clear Signature"}
           </button>
         </div>
 
@@ -585,7 +634,9 @@ export default function Step7Documents({
               <svg className="h-6 w-6 text-slate-300 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
-              <span className="text-xs">Draw your signature using mouse or touch</span>
+              <span className="text-xs">
+                {language === "hi" ? "माउस या टच का उपयोग करके अपना हस्ताक्षर बनाएं" : language === "or" ? "ମାଉସ୍ କିମ୍ବା ସ୍ପର୍ଶ ବ୍ୟବହାର କରି ଆପଣଙ୍କ ଦସ୍ତଖତ ଆଙ୍କନ୍ତୁ" : "Draw your signature using mouse or touch"}
+              </span>
             </div>
           )}
 
@@ -596,7 +647,7 @@ export default function Step7Documents({
                 <svg className="h-3.5 w-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-                Secure Signature Lock Active
+                {language === "hi" ? "सुरक्षित हस्ताक्षर लॉक सक्रिय" : language === "or" ? "ସୁରକ୍ଷିତ ଦସ୍ତଖତ ଲକ୍ ସକ୍ରିୟ" : "Secure Signature Lock Active"}
               </div>
             </div>
           )}

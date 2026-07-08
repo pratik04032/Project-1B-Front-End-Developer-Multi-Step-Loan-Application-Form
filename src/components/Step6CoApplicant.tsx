@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FormState } from "../types";
 import { validatePAN } from "../utils/validators";
+import { useLanguage } from "../context/LanguageContext";
 
 interface StepProps {
   formState: FormState;
@@ -15,6 +16,7 @@ export default function Step6CoApplicant({
   errors,
   registerBlur
 }: StepProps) {
+  const { t, language } = useLanguage();
   const {
     maritalStatus,
     coApplicantName,
@@ -163,8 +165,12 @@ export default function Step6CoApplicant({
   return (
     <div className="space-y-6" id="step6-container">
       <div>
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight">Co-Applicant &amp; Guarantor Details</h2>
-        <p className="text-sm text-slate-500">Provide details for your co-borrower/guarantor as required for your application.</p>
+        <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+          {language === "hi" ? "सह-आवेदक और गारंटर विवरण" : language === "or" ? "ସହ-ଆବେଦନକାରୀ ଏବଂ ଗାରେଣ୍ଟର ବିବରଣୀ" : "Co-Applicant & Guarantor Details"}
+        </h2>
+        <p className="text-sm text-slate-500">
+          {language === "hi" ? "अपनी पात्रता बढ़ाने के लिए सह-आवेदक/गारंटर के आवश्यक विवरण प्रदान करें।" : language === "or" ? "ଆପଣଙ୍କର ଯୋଗ୍ୟତା ବଢାଇବା ପାଇଁ ସହ-ଆବେଦନକାରୀ/ଗାରେଣ୍ଟରଙ୍କ ଆବଶ୍ୟକୀୟ ବିବରଣୀ ପ୍ରଦାନ କରନ୍ତୁ।" : "Provide details for your co-borrower/guarantor as required for your application."}
+        </p>
       </div>
 
       <div className="p-5 bg-blue-50/50 rounded-2xl border border-blue-100/50 space-y-5">
@@ -172,10 +178,12 @@ export default function Step6CoApplicant({
           <svg className="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span>Co-Borrower Requirements Triggered</span>
+          <span>
+            {language === "hi" ? "सह-उधारकर्ता आवश्यकताएं सक्रिय" : language === "or" ? "ସହ-ଋଣଗ୍ରହିତା ଆବଶ୍ୟକତା ସକ୍ରିୟ" : "Co-Borrower Requirements Triggered"}
+          </span>
         </div>
         <p className="text-xs text-blue-700 leading-normal">
-          Based on your loan details, a co-applicant is mandatory to enhance credit eligibility and process your application. Both parties are equally responsible for repayment.
+          {language === "hi" ? "आपके ऋण विवरण के आधार पर, ऋण पात्रता बढ़ाने के लिए सह-आवेदक अनिवार्य है। दोनों पक्ष पुनर्भुगतान के लिए समान रूप से जिम्मेदार हैं।" : language === "or" ? "ଆପଣଙ୍କ ଋଣ ବିବରଣୀ ଉପରେ ଆଧାର କରି, ଯୋଗ୍ୟତା ବୃଦ୍ଧି ପାଇଁ ସହ-ଆବେଦନକାରୀ ବାଧ୍ୟତାମୂଳକ। ଦୁଇ ପକ୍ଷ ପରିଶୋଧ ପାଇଁ ସମାନ ଭାବେ ଦାୟୀ।" : "Based on your loan details, a co-applicant is mandatory to enhance credit eligibility and process your application. Both parties are equally responsible for repayment."}
         </p>
       </div>
 
@@ -183,7 +191,7 @@ export default function Step6CoApplicant({
         {/* Co-Applicant Name */}
         <div className="space-y-2">
           <label htmlFor="coApplicantName" className="block text-sm font-medium text-slate-700">
-            Co-Applicant Full Name *
+            {language === "hi" ? "सह-आवेदक का पूरा नाम *" : language === "or" ? "ସହ-ଆବେଦନକାରୀଙ୍କ ସମ୍ପୂର୍ଣ୍ଣ ନାମ *" : "Co-Applicant Full Name *"}
           </label>
           <input
             type="text"
@@ -192,7 +200,7 @@ export default function Step6CoApplicant({
             value={coApplicantName}
             onChange={(e) => updateFormState({ coApplicantName: e.target.value })}
             onBlur={() => registerBlur("coApplicantName")}
-            placeholder="As per co-applicant's PAN"
+            placeholder={language === "hi" ? "सह-आवेदक के पैन के अनुसार" : language === "or" ? "ସହ-ଆବେଦନକାରୀଙ୍କ PAN ଅନୁଯାୟୀ" : "As per co-applicant's PAN"}
             className={`block w-full px-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errors.coApplicantName ? "border-red-500" : "border-slate-200 hover:border-slate-300"
             }`}
@@ -208,7 +216,7 @@ export default function Step6CoApplicant({
         {/* Co-Applicant Relationship */}
         <div className="space-y-2">
           <label htmlFor="coApplicantRelationship" className="block text-sm font-medium text-slate-700">
-            Relationship with Primary Applicant *
+            {language === "hi" ? "मुख्य आवेदक के साथ संबंध *" : language === "or" ? "ମୁଖ୍ୟ ଆବେଦନକାରୀଙ୍କ ସହ ସମ୍ପର୍କ *" : "Relationship with Primary Applicant *"}
           </label>
           <select
             id="coApplicantRelationship"
@@ -220,11 +228,11 @@ export default function Step6CoApplicant({
               errors.coApplicantRelationship ? "border-red-500" : "border-slate-200 hover:border-slate-300"
             }`}
           >
-            <option value="" disabled>Select Relationship</option>
-            <option value="Spouse">Spouse</option>
-            <option value="Parent">Parent</option>
-            <option value="Sibling">Sibling</option>
-            <option value="Business Partner">Business Partner</option>
+            <option value="" disabled>{language === "hi" ? "संबंध चुनें" : language === "or" ? "ସମ୍ପର୍କ ଚୟନ କରନ୍ତୁ" : "Select Relationship"}</option>
+            <option value="Spouse">{language === "hi" ? "पति/पत्नी" : language === "or" ? "ପତି/ପତ୍ନୀ" : "Spouse"}</option>
+            <option value="Parent">{language === "hi" ? "माता-पिता" : language === "or" ? "ପିତାମାତା" : "Parent"}</option>
+            <option value="Sibling">{language === "hi" ? "भाई-बहन" : language === "or" ? "ଭାଇଭଉଣୀ" : "Sibling"}</option>
+            <option value="Business Partner">{language === "hi" ? "बिजनेस पार्टनर" : language === "or" ? "ବ୍ୟବସାୟିକ ଭାଗିଦାର" : "Business Partner"}</option>
           </select>
           {errors.coApplicantRelationship && (
             <p className="text-xs text-red-600 flex items-center gap-1 mt-1" role="alert" aria-live="polite">
@@ -237,7 +245,7 @@ export default function Step6CoApplicant({
         {/* Co-Applicant PAN */}
         <div className="space-y-2">
           <label htmlFor="coApplicantPan" className="block text-sm font-medium text-slate-700">
-            Co-Applicant PAN Number *
+            {language === "hi" ? "सह-आवेदक पैन नंबर *" : language === "or" ? "ସହ-ଆବେଦନକାରୀଙ୍କ PAN ନମ୍ବର *" : "Co-Applicant PAN Number *"}
           </label>
           <div className="relative rounded-xl shadow-sm">
             <input
@@ -261,7 +269,7 @@ export default function Step6CoApplicant({
           </div>
           {coApplicantPanVerified && !panLoading && (
             <div className="flex items-center gap-1 text-xs text-green-700 font-medium bg-green-50 px-2 py-1 rounded border border-green-100 w-fit animate-fadeIn mt-1">
-              Co-Applicant PAN Verified
+              {language === "hi" ? "सह-आवेदक पैन सत्यापित" : language === "or" ? "ସହ-ଆବେଦନକାରୀଙ୍କ PAN ସତ୍ୟାପିତ" : "Co-Applicant PAN Verified"}
             </div>
           )}
           {errors.coApplicantPan && (
@@ -275,7 +283,7 @@ export default function Step6CoApplicant({
         {/* Co-Applicant Income */}
         <div className="space-y-2">
           <label htmlFor="coApplicantIncome" className="block text-sm font-medium text-slate-700">
-            Co-Applicant Monthly Net Income (₹) *
+            {language === "hi" ? "सह-आवेदक की मासिक शुद्ध आय (₹) *" : language === "or" ? "ସହ-ଆବେଦନକାରୀଙ୍କ ମାସିକ ନିଟ୍ ଆୟ (₹) *" : "Co-Applicant Monthly Net Income (₹) *"}
           </label>
           <div className="relative rounded-xl shadow-sm">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -288,7 +296,7 @@ export default function Step6CoApplicant({
               value={coApplicantIncome !== undefined ? coApplicantIncome : ""}
               onChange={(e) => updateFormState({ coApplicantIncome: parseInt(e.target.value) || 0 })}
               onBlur={() => registerBlur("coApplicantIncome")}
-              placeholder="e.g. 35000 (enter 0 if none)"
+              placeholder={language === "hi" ? "जैसे: 35000 (यदि कोई नहीं है तो 0 दर्ज करें)" : language === "or" ? "ଉଦାହରଣ: ୩୫୦୦୦ (ଯଦି କିଛି ନାହିଁ ୦ ଲେଖନ୍ତୁ)" : "e.g. 35000 (enter 0 if none)"}
               className={`block w-full pl-8 pr-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 errors.coApplicantIncome ? "border-red-500" : "border-slate-200 hover:border-slate-300"
               }`}
@@ -305,7 +313,9 @@ export default function Step6CoApplicant({
 
       {/* Co-applicant Consent and Digital E-Signature */}
       <div className="space-y-4 pt-4 border-t border-slate-100">
-        <h3 className="text-sm font-semibold text-slate-800 uppercase tracking-wider">Co-Borrower Legal Consent &amp; E-Signature</h3>
+        <h3 className="text-sm font-semibold text-slate-800 uppercase tracking-wider">
+          {language === "hi" ? "सह-उधारकर्ता कानूनी सहमति और ई-हस्ताक्षर" : language === "or" ? "ସହ-ଋଣଗ୍ରହିତା ଆଇନଗତ ସମ୍ମତି ଏବଂ ଇ-ଦସ୍ତଖତ" : "Co-Borrower Legal Consent & E-Signature"}
+        </h3>
 
         <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
           <input
@@ -317,7 +327,11 @@ export default function Step6CoApplicant({
             className="mt-1 h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
           />
           <label htmlFor="coApplicantConsent" className="text-xs text-slate-600 leading-normal cursor-pointer select-none">
-            I hereby confirm that I consent to be added as a co-borrower / guarantor for this digital loan application. I authorize LendSwift to pull and review my credit reports (CIBIL/Equifax) and verify my PAN details online. I declare that the details provided are true to the best of my knowledge.
+            {language === "hi" 
+              ? "मैं इसके द्वारा पुष्टि करता/करती हूँ कि मैं इस डिजिटल ऋण आवेदन के लिए सह-उधारकर्ता/गारंटर के रूप में जुड़ने के लिए सहमत हूँ। मैं लेंडस्विफ्ट को अपनी क्रेडिट रिपोर्ट (CIBIL/Equifax) प्राप्त करने और समीक्षा करने तथा पैन विवरणों को ऑनलाइन सत्यापित करने के लिए अधिकृत करता हूँ। मैं घोषणा करता हूँ कि प्रदान किए गए विवरण मेरी सर्वोत्तम जानकारी के अनुसार सही हैं।" 
+              : language === "or" 
+              ? "ମୁଁ ଏତଦ୍ୱାରା ନିଶ୍ଚିତ କରୁଛି ଯେ ମୁଁ ଏହି ଋଣ ଆବେଦନ ପାଇଁ ସହ-ଋଣଗ୍ରହିତା / ଗାରେଣ୍ଟର ଭାବରେ ଯୋଡି ହେବାକୁ ସମ୍ମତି ପ୍ରଦାନ କରୁଛି। ମୋର କ୍ରେଡିଟ୍ ରିପୋର୍ଟ (CIBIL/Equifax) ଯାଞ୍ଚ କରିବାକୁ ଏବଂ ମୋର PAN ବିବରଣୀ ସତ୍ୟାପନ କରିବାକୁ ମୁଁ ଲେଣ୍ଡସ୍ୱିଫ୍ଟକୁ ଅଧିକାର ଦେଉଛି। ମୋର ଜ୍ଞାନ ଅନୁଯାୟୀ ପ୍ରଦାନ କରାଯାଇଥିବା ସମସ୍ତ ବିବରଣୀ ସତ୍ୟ ଅଟେ।" 
+              : "I hereby confirm that I consent to be added as a co-borrower / guarantor for this digital loan application. I authorize LendSwift to pull and review my credit reports (CIBIL/Equifax) and verify my PAN details online. I declare that the details provided are true to the best of my knowledge."}
           </label>
         </div>
         {errors.coApplicantConsent && (
@@ -330,13 +344,15 @@ export default function Step6CoApplicant({
         {/* Signature Drawing Canvas Area */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <label className="block text-sm font-medium text-slate-700">Co-Applicant Digital Signature Drawing *</label>
+            <label className="block text-sm font-medium text-slate-700">
+              {language === "hi" ? "सह-आवेदक डिजिटल हस्ताक्षर चित्र *" : language === "or" ? "ସହ-ଆବେଦନକାରୀଙ୍କ ଡିଜିଟାଲ୍ ଦସ୍ତଖତ *" : "Co-Applicant Digital Signature Drawing *"}
+            </label>
             <button
               type="button"
               onClick={clearCanvas}
               className="text-xs font-semibold text-red-600 hover:text-red-700 cursor-pointer hover:underline"
             >
-              Clear Signature
+              {language === "hi" ? "हस्ताक्षर साफ करें" : language === "or" ? "ଦସ୍ତଖତ ସଫା କରନ୍ତୁ" : "Clear Signature"}
             </button>
           </div>
 
@@ -359,7 +375,9 @@ export default function Step6CoApplicant({
                 <svg className="h-6 w-6 text-slate-300 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                 </svg>
-                <span className="text-xs">Draw your signature using mouse or touch</span>
+                <span className="text-xs">
+                  {language === "hi" ? "माउस या टच का उपयोग करके अपना हस्ताक्षर बनाएं" : language === "or" ? "ମାଉସ୍ କିମ୍ବା ସ୍ପର୍ଶ ବ୍ୟବହାର କରି ଆପଣଙ୍କ ଦସ୍ତଖତ ଆଙ୍କନ୍ତୁ" : "Draw your signature using mouse or touch"}
+                </span>
               </div>
             )}
           </div>

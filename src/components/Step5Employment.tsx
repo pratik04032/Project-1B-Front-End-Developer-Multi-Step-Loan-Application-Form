@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FormState, EmploymentType } from "../types";
+import { useLanguage } from "../context/LanguageContext";
 
 interface StepProps {
   formState: FormState;
@@ -33,6 +34,7 @@ export default function Step5Employment({
   errors,
   registerBlur
 }: StepProps) {
+  const { t, language } = useLanguage();
   const {
     loanType,
     employmentType,
@@ -101,19 +103,29 @@ export default function Step5Employment({
   return (
     <div className="space-y-6" id="step5-container">
       <div>
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight">Employment &amp; Income Details</h2>
-        <p className="text-sm text-slate-500">Provide details about your occupation, employer, and monthly cash flows.</p>
+        <h2 className="text-xl font-bold text-slate-900 tracking-tight">{t("step5Title")}</h2>
+        <p className="text-sm text-slate-500">{t("step5Desc")}</p>
       </div>
 
       {/* Employment Type Selection */}
       <div className="space-y-3">
-        <label className="block text-sm font-medium text-slate-700">Employment Type *</label>
+        <label className="block text-sm font-medium text-slate-700">{t("employmentType")} *</label>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4" role="radiogroup" aria-label="Select employment type">
           {["Salaried", "Self-Employed", "Business Owner"].map((type) => {
             // Business Loan requires Business Owner or Self-Employed (Salaried is disabled or errors)
             const isBusinessLoan = loanType === "Business";
             const isDisabled = isBusinessLoan && type === "Salaried";
             const isSelected = employmentType === type;
+
+            const localizedTypeLabel = type === "Salaried" 
+              ? t("Salaried") 
+              : type === "Self-Employed" 
+              ? t("Self-Employed") 
+              : language === "hi" 
+              ? "व्यवसाय स्वामी" 
+              : language === "or" 
+              ? "ବ୍ୟବସାୟ ମାଲିକ" 
+              : "Business Owner";
 
             return (
               <button
@@ -135,14 +147,14 @@ export default function Step5Employment({
                 aria-checked={isSelected}
               >
                 <span className={`text-base font-semibold ${isSelected ? "text-blue-700" : isDisabled ? "text-slate-400" : "text-slate-800"}`}>
-                  {type}
+                  {localizedTypeLabel}
                 </span>
                 <span className="text-xs text-slate-500 mt-1">
                   {type === "Salaried"
-                    ? "Monthly fixed salary slip"
+                    ? (language === "hi" ? "मासिक निश्चित वेतन पर्ची" : language === "or" ? "ମାସିକ ନିର୍ଦ୍ଦିଷ୍ଟ ଦରମା ସ୍ଲିପ୍" : "Monthly fixed salary slip")
                     : type === "Self-Employed"
-                    ? "Freelancers, independent professionals"
-                    : "Registered firm owners, partners"}
+                    ? (language === "hi" ? "फ्रीलांसर, स्वतंत्र पेशेवर" : language === "or" ? "ଫ୍ରିଲାନ୍ସର, ସ୍ୱାଧୀନ ପେସାଦାର" : "Freelancers, independent professionals")
+                    : (language === "hi" ? "पंजीकृत फर्म के मालिक, भागीदार" : language === "or" ? "ପଞ୍ଜୀକୃତ ଫର୍ମ ମାଲିକ, ଅଂଶୀଦାର" : "Registered firm owners, partners")}
                 </span>
                 {isSelected && (
                   <span className="absolute top-3 right-3 flex h-3 w-3">
@@ -164,12 +176,14 @@ export default function Step5Employment({
       {/* SALARIED SUB-FORM */}
       {employmentType === "Salaried" && (
         <div className="space-y-5 p-5 bg-slate-50/50 rounded-2xl border border-slate-100 animate-fadeIn">
-          <h3 className="text-sm font-semibold text-slate-800 uppercase tracking-wider">Salary Details</h3>
+          <h3 className="text-sm font-semibold text-slate-800 uppercase tracking-wider">
+            {language === "hi" ? "वेतन विवरण" : language === "or" ? "ଦରମା ବିବରଣୀ" : "Salary Details"}
+          </h3>
 
           {/* Company Name with Autocomplete */}
           <div className="space-y-2 relative">
             <label htmlFor="companyName" className="block text-sm font-medium text-slate-700">
-              Employer/Company Name *
+              {language === "hi" ? "नियोक्ता / कंपनी का नाम *" : language === "or" ? "ନିଯୁକ୍ତିଦାତା / କମ୍ପାନୀ ନାମ *" : "Employer/Company Name *"}
             </label>
             <input
               type="text"
@@ -185,7 +199,7 @@ export default function Step5Employment({
               onFocus={() => {
                 if (companyName.trim().length > 1) setShowSuggestions(true);
               }}
-              placeholder="Start typing your company name..."
+              placeholder={language === "hi" ? "अपनी कंपनी का नाम टाइप करना शुरू करें..." : language === "or" ? "ଆପଣଙ୍କ କମ୍ପାନୀ ନାମ ଟାଇପ୍ କରିବା ଆରମ୍ଭ କରନ୍ତୁ..." : "Start typing your company name..."}
               className={`block w-full px-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 errors.companyName ? "border-red-500" : "border-slate-200 hover:border-slate-300"
               }`}
@@ -219,7 +233,7 @@ export default function Step5Employment({
             {/* Designation */}
             <div className="space-y-2">
               <label htmlFor="designation" className="block text-sm font-medium text-slate-700">
-                Job Title / Designation *
+                {language === "hi" ? "पद / पदनाम *" : language === "or" ? "ପଦବୀ / ପଦନାମ *" : "Job Title / Designation *"}
               </label>
               <input
                 type="text"
@@ -228,7 +242,7 @@ export default function Step5Employment({
                 value={designation}
                 onChange={(e) => updateFormState({ designation: e.target.value })}
                 onBlur={() => registerBlur("designation")}
-                placeholder="e.g. Senior Software Engineer"
+                placeholder={language === "hi" ? "जैसे: वरिष्ठ सॉफ्टवेयर इंजीनियर" : language === "or" ? "ଉଦାହରଣ: ବରିଷ୍ଠ ସଫ୍ଟୱେର୍ ଇଞ୍ଜିନିୟର୍" : "e.g. Senior Software Engineer"}
                 className={`block w-full px-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.designation ? "border-red-500" : "border-slate-200 hover:border-slate-300"
                 }`}
@@ -244,7 +258,7 @@ export default function Step5Employment({
             {/* Net Salary */}
             <div className="space-y-2">
               <label htmlFor="monthlyNetSalary" className="block text-sm font-medium text-slate-700">
-                Monthly Net In-Hand Salary (₹) *
+                {language === "hi" ? "मासिक शुद्ध इन-हैंड वेतन (₹) *" : language === "or" ? "ମାସିକ ନିଟ୍ ହାତ ଦରମା (₹) *" : "Monthly Net In-Hand Salary (₹) *"}
               </label>
               <div className="relative rounded-xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -257,7 +271,7 @@ export default function Step5Employment({
                   value={monthlyNetSalary || ""}
                   onChange={(e) => updateFormState({ monthlyNetSalary: parseInt(e.target.value) || 0 })}
                   onBlur={() => registerBlur("monthlyNetSalary")}
-                  placeholder="Min: 15,000"
+                  placeholder={language === "hi" ? "न्यूनतम: 15,000" : language === "or" ? "ସର୍ବନିମ୍ନ: ୧୫,୦୦୦" : "Min: 15,000"}
                   className={`block w-full pl-8 pr-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors.monthlyNetSalary ? "border-red-500" : "border-slate-200 hover:border-slate-300"
                   }`}
@@ -275,7 +289,7 @@ export default function Step5Employment({
           {/* Years of Experience */}
           <div className="space-y-2">
             <label htmlFor="yearsOfExperience" className="block text-sm font-medium text-slate-700">
-              Total Work Experience (Years) *
+              {language === "hi" ? "कुल कार्य अनुभव (वर्ष) *" : language === "or" ? "ମୋଟ କାର୍ଯ୍ୟ ଅନୁଭବ (ବର୍ଷ) *" : "Total Work Experience (Years) *"}
             </label>
             <input
               type="number"
@@ -284,7 +298,7 @@ export default function Step5Employment({
               value={yearsOfExperience !== undefined ? yearsOfExperience : ""}
               onChange={(e) => updateFormState({ yearsOfExperience: parseInt(e.target.value) || 0 })}
               onBlur={() => registerBlur("yearsOfExperience")}
-              placeholder="e.g. 5"
+              placeholder={language === "hi" ? "जैसे: 5" : language === "or" ? "ଉଦାହରଣ: ୫" : "e.g. 5"}
               min={0}
               max={50}
               className={`block w-full px-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
@@ -304,13 +318,15 @@ export default function Step5Employment({
       {/* SELF-EMPLOYED OR BUSINESS OWNER SUB-FORM */}
       {(employmentType === "Self-Employed" || employmentType === "Business Owner") && (
         <div className="space-y-5 p-5 bg-slate-50/50 rounded-2xl border border-slate-100 animate-fadeIn">
-          <h3 className="text-sm font-semibold text-slate-800 uppercase tracking-wider">Business Details</h3>
+          <h3 className="text-sm font-semibold text-slate-800 uppercase tracking-wider">
+            {language === "hi" ? "व्यवसाय विवरण" : language === "or" ? "ବ୍ୟବସାୟ ବିବରଣୀ" : "Business Details"}
+          </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Business Name */}
             <div className="space-y-2">
               <label htmlFor="businessName" className="block text-sm font-medium text-slate-700">
-                Registered Business/Company Name *
+                {language === "hi" ? "पंजीकृत व्यवसाय / कंपनी का नाम *" : language === "or" ? "ପଞ୍ଜୀକୃତ ବ୍ୟବସାୟ / କମ୍ପାନୀ ନାମ *" : "Registered Business/Company Name *"}
               </label>
               <input
                 type="text"
@@ -319,7 +335,7 @@ export default function Step5Employment({
                 value={businessName}
                 onChange={(e) => updateFormState({ businessName: e.target.value })}
                 onBlur={() => registerBlur("businessName")}
-                placeholder="e.g. Jena Technologies Private Limited"
+                placeholder={language === "hi" ? "जैसे: जेना टेक्नोलॉजीज प्राइवेट लिमिटेड" : language === "or" ? "ଉଦାହରଣ: ଜେନା ଟେକ୍ନୋଲୋଜି ପ୍ରାଇଭେଟ୍ ଲିମିଟେଡ୍" : "e.g. Jena Technologies Private Limited"}
                 className={`block w-full px-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.businessName ? "border-red-500" : "border-slate-200 hover:border-slate-300"
                 }`}
@@ -335,7 +351,7 @@ export default function Step5Employment({
             {/* Business Type */}
             <div className="space-y-2">
               <label htmlFor="businessType" className="block text-sm font-medium text-slate-700">
-                Business Legal Entity Type *
+                {language === "hi" ? "व्यावसायिक कानूनी इकाई प्रकार *" : language === "or" ? "ବ୍ୟବସାୟିକ ଆଇନଗତ ସଂସ୍ଥା ପ୍ରକାର *" : "Business Legal Entity Type *"}
               </label>
               <select
                 id="businessType"
@@ -347,12 +363,12 @@ export default function Step5Employment({
                   errors.businessType ? "border-red-500" : "border-slate-200 hover:border-slate-300"
                 }`}
               >
-                <option value="" disabled>Select Business Type</option>
-                <option value="Sole Proprietorship">Sole Proprietorship</option>
-                <option value="Partnership">Partnership</option>
-                <option value="LLP">Limited Liability Partnership (LLP)</option>
-                <option value="Private Limited">Private Limited Company (Pvt Ltd)</option>
-                <option value="Unregistered">Unregistered / Independent Professional</option>
+                <option value="" disabled>{language === "hi" ? "व्यवसाय प्रकार चुनें" : language === "or" ? "ବ୍ୟବସାୟ ପ୍ରକାର ଚୟନ କରନ୍ତୁ" : "Select Business Type"}</option>
+                <option value="Sole Proprietorship">{language === "hi" ? "एकल स्वामित्व" : language === "or" ? "ଏକକ ମାଲିକାନା" : "Sole Proprietorship"}</option>
+                <option value="Partnership">{language === "hi" ? "साझेदारी" : language === "or" ? "ଭାଗିଦାରୀ" : "Partnership"}</option>
+                <option value="LLP">{language === "hi" ? "सीमित देयता भागीदारी (LLP)" : language === "or" ? "ସୀମିତ ଦାୟିତ୍ୱ ଭାଗିଦାରୀ (LLP)" : "Limited Liability Partnership (LLP)"}</option>
+                <option value="Private Limited">{language === "hi" ? "प्राइवेट लिमिटेड कंपनी (Pvt Ltd)" : language === "or" ? "ପ୍ରାଇଭେଟ୍ ଲିମିଟେଡ୍ କମ୍ପାନୀ (Pvt Ltd)" : "Private Limited Company (Pvt Ltd)"}</option>
+                <option value="Unregistered">{language === "hi" ? "अregistered / स्वतंत्र पेशेवर" : language === "or" ? "ଅପଞ୍ଜୀକୃତ / ସ୍ୱାଧୀନ ପେସାଦାର" : "Unregistered / Independent Professional"}</option>
               </select>
               {errors.businessType && (
                 <p className="text-xs text-red-600 flex items-center gap-1 mt-1" role="alert" aria-live="polite">
@@ -367,7 +383,7 @@ export default function Step5Employment({
             {/* Annual Turnover */}
             <div className="space-y-2">
               <label htmlFor="annualTurnover" className="block text-sm font-medium text-slate-700">
-                Annual Turnover (Gross ₹) *
+                {language === "hi" ? "वार्षिक कारोबार (सकल ₹) *" : language === "or" ? "ବାର୍ଷିକ କାରବାର (ମୋଟ ₹) *" : "Annual Turnover (Gross ₹) *"}
               </label>
               <div className="relative rounded-xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -380,7 +396,7 @@ export default function Step5Employment({
                   value={annualTurnover || ""}
                   onChange={(e) => updateFormState({ annualTurnover: parseInt(e.target.value) || 0 })}
                   onBlur={() => registerBlur("annualTurnover")}
-                  placeholder="Min: 3,00,000"
+                  placeholder={language === "hi" ? "न्यूनतम: 3,00,000" : language === "or" ? "ସର୍ବନିମ୍ନ: ୩,୦୦,୦୦୦" : "Min: 3,00,000"}
                   className={`block w-full pl-8 pr-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors.annualTurnover ? "border-red-500" : "border-slate-200 hover:border-slate-300"
                   }`}
@@ -397,7 +413,7 @@ export default function Step5Employment({
             {/* Years in Business */}
             <div className="space-y-2">
               <label htmlFor="yearsInBusiness" className="block text-sm font-medium text-slate-700">
-                Years in Business *
+                {language === "hi" ? "व्यवसाय में वर्ष *" : language === "or" ? "ବ୍ୟବସାୟରେ ବର୍ଷ *" : "Years in Business *"}
               </label>
               <input
                 type="number"
@@ -406,7 +422,7 @@ export default function Step5Employment({
                 value={yearsInBusiness || ""}
                 onChange={(e) => updateFormState({ yearsInBusiness: parseInt(e.target.value) || 0 })}
                 onBlur={() => registerBlur("yearsInBusiness")}
-                placeholder="Min: 2 years"
+                placeholder={language === "hi" ? "न्यूनतम: 2 वर्ष" : language === "or" ? "ସର୍ବନିମ୍ନ: ୨ ବର୍ଷ" : "Min: 2 years"}
                 min={0}
                 className={`block w-full px-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.yearsInBusiness ? "border-red-500" : "border-slate-200 hover:border-slate-300"
@@ -425,7 +441,7 @@ export default function Step5Employment({
             {/* Monthly Net Income */}
             <div className="space-y-2">
               <label htmlFor="monthlyIncome" className="block text-sm font-medium text-slate-700">
-                Average Net Monthly Income (₹) *
+                {language === "hi" ? "औसत शुद्ध मासिक आय (₹) *" : language === "or" ? "ହାରାହାରି ନିଟ୍ ମାସିକ ଆୟ (₹) *" : "Average Net Monthly Income (₹) *"}
               </label>
               <div className="relative rounded-xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -438,7 +454,7 @@ export default function Step5Employment({
                   value={monthlyIncome || ""}
                   onChange={(e) => updateFormState({ monthlyIncome: parseInt(e.target.value) || 0 })}
                   onBlur={() => registerBlur("monthlyIncome")}
-                  placeholder="e.g. 50000"
+                  placeholder={language === "hi" ? "जैसे: 50000" : language === "or" ? "ଉଦାହରଣ: ୫୦୦୦୦" : "e.g. 50000"}
                   className={`block w-full pl-8 pr-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors.monthlyIncome ? "border-red-500" : "border-slate-200 hover:border-slate-300"
                   }`}
@@ -457,9 +473,13 @@ export default function Step5Employment({
               <div className="space-y-2 animate-fadeIn">
                 <div className="flex justify-between items-center">
                   <label htmlFor="gstNumber" className="block text-sm font-medium text-slate-700">
-                    GSTIN (15-character ID) *
+                    {language === "hi" ? "जीएसटीआईएन (15-वर्ण आईडी) *" : language === "or" ? "GSTIN (୧୫-ବିଶିଷ୍ଟ ଆଇଡି) *" : "GSTIN (15-character ID) *"}
                   </label>
-                  {panNumber && <span className="text-[10px] text-slate-400">Must include PAN: {panNumber}</span>}
+                  {panNumber && (
+                    <span className="text-[10px] text-slate-400">
+                      {language === "hi" ? `पैन शामिल होना चाहिए: ${panNumber}` : language === "or" ? `PAN ଅନ୍ତର୍ଭୁକ୍ତ ହେବା ଆବଶ୍ୟକ: ${panNumber}` : `Must include PAN: ${panNumber}`}
+                    </span>
+                  )}
                 </div>
                 <input
                   type="text"
@@ -468,7 +488,7 @@ export default function Step5Employment({
                   value={gstNumber}
                   onChange={(e) => updateFormState({ gstNumber: e.target.value.toUpperCase().trim() })}
                   onBlur={() => registerBlur("gstNumber")}
-                  placeholder="e.g. 27ABCDE1234F1Z5"
+                  placeholder={language === "hi" ? "जैसे: 27ABCDE1234F1Z5" : language === "or" ? "ଉଦାହରଣ: ୨୭ABCDE୧୨୩୪F୧Z୫" : "e.g. 27ABCDE1234F1Z5"}
                   maxLength={15}
                   className={`block w-full px-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono tracking-wider ${
                     errors.gstNumber ? "border-red-500" : "border-slate-200 hover:border-slate-300"
@@ -485,7 +505,7 @@ export default function Step5Employment({
               /* GST Optional Field if not mandatory */
               <div className="space-y-2">
                 <label htmlFor="gstNumber" className="block text-sm font-medium text-slate-700">
-                  GSTIN (Optional)
+                  {language === "hi" ? "जीएसटीआईएन (वैकल्पिक)" : language === "or" ? "GSTIN (ବୈକଳ୍ପିକ)" : "GSTIN (Optional)"}
                 </label>
                 <input
                   type="text"
@@ -494,7 +514,7 @@ export default function Step5Employment({
                   value={gstNumber}
                   onChange={(e) => updateFormState({ gstNumber: e.target.value.toUpperCase().trim() })}
                   onBlur={() => registerBlur("gstNumber")}
-                  placeholder="e.g. 27ABCDE1234F1Z5"
+                  placeholder={language === "hi" ? "जैसे: 27ABCDE1234F1Z5" : language === "or" ? "ଉଦାହରଣ: ୨୭ABCDE୧୨୩୪F୧Z୫" : "e.g. 27ABCDE1234F1Z5"}
                   maxLength={15}
                   className="block w-full px-4 py-3 bg-white border border-slate-200 hover:border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono tracking-wider"
                 />
@@ -505,7 +525,7 @@ export default function Step5Employment({
           {/* Office Address */}
           <div className="space-y-2">
             <label htmlFor="officeAddress" className="block text-sm font-medium text-slate-700">
-              Office/Business Address *
+              {language === "hi" ? "कार्यालय / व्यवसाय का पता *" : language === "or" ? "କାର୍ଯ୍ୟାଳୟ / ବ୍ୟବସାୟ ଠିକଣା *" : "Office/Business Address *"}
             </label>
             <textarea
               id="officeAddress"
@@ -513,7 +533,7 @@ export default function Step5Employment({
               value={officeAddress}
               onChange={(e) => updateFormState({ officeAddress: e.target.value })}
               onBlur={() => registerBlur("officeAddress")}
-              placeholder="Provide complete business address including city, state and PIN code."
+              placeholder={language === "hi" ? "शहर, राज्य और पिन कोड सहित पूरा व्यावसायिक पता प्रदान करें।" : language === "or" ? "ସହର, ରାଜ୍ୟ ଏବଂ ପିନ୍ କୋଡ୍ ସହିତ ସମ୍ପୂର୍ଣ୍ଣ ବ୍ୟବସାୟ ଠିକଣା ପ୍ରଦାନ କରନ୍ତୁ।" : "Provide complete business address including city, state and PIN code."}
               rows={3}
               className={`block w-full px-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 errors.officeAddress ? "border-red-500" : "border-slate-200 hover:border-slate-300"

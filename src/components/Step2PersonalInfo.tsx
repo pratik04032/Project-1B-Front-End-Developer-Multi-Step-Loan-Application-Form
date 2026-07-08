@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FormState } from "../types";
+import { useLanguage } from "../context/LanguageContext";
 
 interface StepProps {
   formState: FormState;
@@ -14,6 +15,7 @@ export default function Step2PersonalInfo({
   errors,
   registerBlur
 }: StepProps) {
+  const { t, language } = useLanguage();
   const {
     fullName,
     dob,
@@ -38,7 +40,13 @@ export default function Step2PersonalInfo({
 
   const triggerSendOtp = () => {
     if (!mobileNumber || !/^[6-9]\d{9}$/.test(mobileNumber)) {
-      alert("Please enter a valid 10-digit mobile number before requesting an OTP.");
+      alert(
+        language === "hi"
+          ? "कृपया ओटीपी का अनुरोध करने से पहले एक मान्य 10-अंकीय मोबाइल नंबर दर्ज करें।"
+          : language === "or"
+          ? "ଦୟାକରି OTP ଅନୁରୋଧ କରିବା ପୂର୍ବରୁ ଏକ ବୈଧ ୧୦-ଅଙ୍କ ବିଶିଷ୍ଟ ମୋବାଇଲ୍ ମୋବାଇଲ୍ ନମ୍ବର ପ୍ରବେଶ କରନ୍ତୁ।"
+          : "Please enter a valid 10-digit mobile number before requesting an OTP."
+      );
       return;
     }
     setOtpSending(true);
@@ -55,22 +63,28 @@ export default function Step2PersonalInfo({
       setOtpError("");
       localStorage.setItem(`otp_verified_${mobileNumber}`, "true");
     } else {
-      setOtpError("Incorrect OTP. For simulation, please enter '777777'.");
+      setOtpError(
+        language === "hi"
+          ? "गलत ओटीपी। सिमुलेशन के लिए, कृपया '777777' दर्ज करें।"
+          : language === "or"
+          ? "ଭୁଲ୍ OTP। ଅନୁକରଣ ପାଇଁ, ଦୟାକରି '777777' ପ୍ରବେଶ କରନ୍ତୁ।"
+          : "Incorrect OTP. For simulation, please enter '777777'."
+      );
     }
   };
 
   return (
     <div className="space-y-6" id="step2-container">
       <div>
-        <h2 className="text-xl font-bold text-slate-900 tracking-tight">Personal Information</h2>
-        <p className="text-sm text-slate-500">Provide your official details as recorded on your documents.</p>
+        <h2 className="text-xl font-bold text-slate-900 tracking-tight">{t("step2Title")}</h2>
+        <p className="text-sm text-slate-500">{t("step2Desc")}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Full Name */}
         <div className="space-y-2">
           <label htmlFor="fullName" className="block text-sm font-medium text-slate-700">
-            Full Name (As per PAN) *
+            {t("fullName")} *
           </label>
           <input
             type="text"
@@ -79,7 +93,7 @@ export default function Step2PersonalInfo({
             value={fullName}
             onChange={(e) => updateFormState({ fullName: e.target.value })}
             onBlur={() => registerBlur("fullName")}
-            placeholder="e.g. PRATIK KUMAR JENA"
+            placeholder={language === "hi" ? "जैसे: प्रतीक कुमार जेना" : language === "or" ? "ଉଦାହରଣ: ପ୍ରତୀକ କୁମାର ଜେନା" : "e.g. PRATIK KUMAR JENA"}
             className={`block w-full px-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errors.fullName ? "border-red-500" : "border-slate-200 hover:border-slate-300"
             }`}
@@ -97,7 +111,7 @@ export default function Step2PersonalInfo({
         {/* Date of Birth */}
         <div className="space-y-2">
           <label htmlFor="dob" className="block text-sm font-medium text-slate-700">
-            Date of Birth *
+            {t("dob")} *
           </label>
           <input
             type="date"
@@ -118,13 +132,15 @@ export default function Step2PersonalInfo({
               {errors.dob}
             </p>
           ) : (
-            <p className="text-xs text-slate-400">Must be between 21 and 65 years old</p>
+            <p className="text-xs text-slate-400">
+              {language === "hi" ? "उम्र 21 से 65 वर्ष के बीच होनी चाहिए" : language === "or" ? "ବୟସ ୨୧ ରୁ ୬୫ ବର୍ଷ ମଧ୍ୟରେ ହୋଇଥିବା ଆବଶ୍ୟକ" : "Must be between 21 and 65 years old"}
+            </p>
           )}
         </div>
 
         {/* Gender */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700">Gender *</label>
+          <label className="block text-sm font-medium text-slate-700">{t("gender")} *</label>
           <div className="flex gap-4" role="radiogroup" aria-label="Select gender">
             {["Male", "Female", "Other"].map((item) => {
               const isSelected = gender === item;
@@ -142,7 +158,7 @@ export default function Step2PersonalInfo({
                   role="radio"
                   aria-checked={isSelected}
                 >
-                  {item}
+                  {t(item as any)}
                 </button>
               );
             })}
@@ -158,7 +174,7 @@ export default function Step2PersonalInfo({
         {/* Marital Status */}
         <div className="space-y-2">
           <label htmlFor="maritalStatus" className="block text-sm font-medium text-slate-700">
-            Marital Status *
+            {t("maritalStatus")} *
           </label>
           <select
             id="maritalStatus"
@@ -172,11 +188,11 @@ export default function Step2PersonalInfo({
             aria-invalid={errors.maritalStatus ? "true" : "false"}
             aria-describedby={errors.maritalStatus ? "maritalStatus-error" : undefined}
           >
-            <option value="" disabled>Select Status</option>
-            <option value="Single">Single</option>
-            <option value="Married">Married</option>
-            <option value="Divorced">Divorced</option>
-            <option value="Widowed">Widowed</option>
+            <option value="" disabled>{language === "hi" ? "स्थिति चुनें" : language === "or" ? "ସ୍ଥିତି ଚୟନ କରନ୍ତୁ" : "Select Status"}</option>
+            <option value="Single">{t("Single")}</option>
+            <option value="Married">{t("Married")}</option>
+            <option value="Divorced">{t("Divorced")}</option>
+            <option value="Widowed">{t("Widowed")}</option>
           </select>
           {errors.maritalStatus && (
             <p className="text-xs text-red-600 flex items-center gap-1 mt-1" id="maritalStatus-error" role="alert" aria-live="polite">
@@ -189,7 +205,7 @@ export default function Step2PersonalInfo({
         {/* Father's Name */}
         <div className="space-y-2">
           <label htmlFor="fathersName" className="block text-sm font-medium text-slate-700">
-            Father&apos;s Full Name *
+            {t("fathersName")} *
           </label>
           <input
             type="text"
@@ -198,7 +214,7 @@ export default function Step2PersonalInfo({
             value={fathersName}
             onChange={(e) => updateFormState({ fathersName: e.target.value })}
             onBlur={() => registerBlur("fathersName")}
-            placeholder="As recorded on legal ID"
+            placeholder={language === "hi" ? "कानूनी पहचान पत्र के अनुसार" : language === "or" ? "ଆଇନଗତ ପରିଚୟ ପତ୍ର ଅନୁଯାୟୀ" : "As recorded on legal ID"}
             className={`block w-full px-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errors.fathersName ? "border-red-500" : "border-slate-200 hover:border-slate-300"
             }`}
@@ -216,7 +232,7 @@ export default function Step2PersonalInfo({
         {/* Mother's Name */}
         <div className="space-y-2">
           <label htmlFor="mothersName" className="block text-sm font-medium text-slate-700">
-            Mother&apos;s Full Name *
+            {t("mothersName")} *
           </label>
           <input
             type="text"
@@ -225,7 +241,7 @@ export default function Step2PersonalInfo({
             value={mothersName}
             onChange={(e) => updateFormState({ mothersName: e.target.value })}
             onBlur={() => registerBlur("mothersName")}
-            placeholder="As recorded on legal ID"
+            placeholder={language === "hi" ? "कानूनी पहचान पत्र के अनुसार" : language === "or" ? "ଆଇନଗତ ପରିଚୟ ପତ୍ର ଅନୁଯାୟୀ" : "As recorded on legal ID"}
             className={`block w-full px-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errors.mothersName ? "border-red-500" : "border-slate-200 hover:border-slate-300"
             }`}
@@ -243,7 +259,7 @@ export default function Step2PersonalInfo({
         {/* Email */}
         <div className="space-y-2">
           <label htmlFor="email" className="block text-sm font-medium text-slate-700">
-            Email Address *
+            {t("email")} *
           </label>
           <input
             type="email"
@@ -252,7 +268,7 @@ export default function Step2PersonalInfo({
             value={email}
             onChange={(e) => updateFormState({ email: e.target.value })}
             onBlur={() => registerBlur("email")}
-            placeholder="name@example.com"
+            placeholder={language === "hi" ? "नाम@उदाहरण.com" : language === "or" ? "ନାମ@ଉଦାହରଣ.com" : "name@example.com"}
             className={`block w-full px-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errors.email ? "border-red-500" : "border-slate-200 hover:border-slate-300"
             }`}
@@ -270,7 +286,7 @@ export default function Step2PersonalInfo({
         {/* Mobile Number & OTP Verification */}
         <div className="space-y-2">
           <label htmlFor="mobileNumber" className="block text-sm font-medium text-slate-700">
-            Mobile Number *
+            {t("mobileNumber")} *
           </label>
           <div className="flex gap-2">
             <input
@@ -281,7 +297,7 @@ export default function Step2PersonalInfo({
               disabled={otpVerified}
               onChange={(e) => updateFormState({ mobileNumber: e.target.value.replace(/\D/g, "").substring(0, 10) })}
               onBlur={() => registerBlur("mobileNumber")}
-              placeholder="10-digit mobile number"
+              placeholder={language === "hi" ? "10-अंकीय मोबाइल नंबर" : language === "or" ? "୧୦-ଅଙ୍କ ବିଶିଷ୍ଟ ମୋବାଇଲ୍ ନମ୍ବର" : "10-digit mobile number"}
               className={`block flex-1 px-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500 ${
                 errors.mobileNumber ? "border-red-500" : "border-slate-200 hover:border-slate-300"
               }`}
@@ -294,12 +310,12 @@ export default function Step2PersonalInfo({
                 type="button"
                 onClick={triggerSendOtp}
                 disabled={otpSending || !/^[6-9]\d{9}$/.test(mobileNumber)}
-                className="px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 cursor-pointer flex items-center gap-2"
+                className="px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 cursor-pointer flex items-center gap-2 animate-fadeIn shrink-0"
               >
                 {otpSending ? (
                   <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
                 ) : null}
-                Send OTP
+                {otpSending ? (language === "hi" ? "भेजा जा रहा है..." : language === "or" ? "ପଠାଯାଉଛି..." : "Sending...") : (language === "hi" ? "ओटीपी भेजें" : language === "or" ? "OTP ପଠାନ୍ତୁ" : "Send OTP")}
               </button>
             )}
           </div>
@@ -314,17 +330,21 @@ export default function Step2PersonalInfo({
           {otpSent && !otpVerified && (
             <div className="mt-3 p-4 bg-blue-50 rounded-xl border border-blue-100 space-y-3 animate-fadeIn">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-semibold text-blue-800">Simulated SMS Received:</span>
+                <span className="text-xs font-semibold text-blue-800">
+                  {language === "hi" ? "सिम्युलेटेड एसएमएस प्राप्त हुआ:" : language === "or" ? "ଅନୁକୃତ SMS ପ୍ରାପ୍ତ ହେଲା:" : "Simulated SMS Received:"}
+                </span>
                 <span className="bg-yellow-100 text-yellow-800 text-[10px] px-2 py-0.5 rounded font-mono">
-                  OTP Code: {mockOtp}
+                  {language === "hi" ? `ओटीपी कोड: ${mockOtp}` : language === "or" ? `OTP କୋଡ୍: ${mockOtp}` : `OTP Code: ${mockOtp}`}
                 </span>
               </div>
-              <p className="text-xs text-blue-700">We&apos;ve sent a simulated verification OTP code to +91 {mobileNumber}.</p>
+              <p className="text-xs text-blue-700">
+                {language === "hi" ? `हमने +91 ${mobileNumber} पर एक सिम्युलेटेड सत्यापन ओटीपी कोड भेजा है।` : language === "or" ? `ଆମେ +91 ${mobileNumber} କୁ ଏକ ଅନୁକୃତ ଯାଞ୍ଚ OTP କୋଡ୍ ପଠାଇଛୁ।` : `We've sent a simulated verification OTP code to +91 ${mobileNumber}.`}
+              </p>
               <div className="flex gap-2">
                 <input
                   type="text"
                   maxLength={6}
-                  placeholder="Enter 6-digit OTP"
+                  placeholder={language === "hi" ? "6-अंकीय ओटीपी दर्ज करें" : language === "or" ? "୬-ଅଙ୍କ ବିଶିଷ୍ଟ OTP ପ୍ରବେଶ କରନ୍ତୁ" : "Enter 6-digit OTP"}
                   value={enteredOtp}
                   onChange={(e) => setEnteredOtp(e.target.value.replace(/\D/g, ""))}
                   className="px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-center tracking-widest font-mono"
@@ -333,9 +353,9 @@ export default function Step2PersonalInfo({
                   type="button"
                   onClick={verifyOtp}
                   disabled={enteredOtp.length !== 6}
-                  className="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-xs font-semibold rounded-lg disabled:opacity-50 cursor-pointer"
+                  className="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-xs font-semibold rounded-lg disabled:opacity-50 cursor-pointer shrink-0"
                 >
-                  Verify
+                  {language === "hi" ? "सत्यापित करें" : language === "or" ? "ଯାଞ୍ଚ କରନ୍ତୁ" : "Verify"}
                 </button>
               </div>
               {otpError && <p className="text-xs text-red-600 font-medium" role="alert">{otpError}</p>}
@@ -347,7 +367,9 @@ export default function Step2PersonalInfo({
               <svg className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
-              <span>Mobile number verified successfully via OTP.</span>
+              <span>
+                {language === "hi" ? "मोबाइल नंबर ओटीपी के माध्यम से सफलतापूर्वक सत्यापित किया गया।" : language === "or" ? "ମୋବାଇଲ୍ ନମ୍ବର OTP ମାଧ୍ୟମରେ ସଫଳତାର ସହ ଯାଞ୍ଚ ହୋଇଛି।" : "Mobile number verified successfully via OTP."}
+              </span>
               <button
                 type="button"
                 onClick={() => {
@@ -358,7 +380,7 @@ export default function Step2PersonalInfo({
                 }}
                 className="ml-auto text-blue-600 hover:underline text-[10px]"
               >
-                Change Number
+                {language === "hi" ? "नंबर बदलें" : language === "or" ? "ନମ୍ବର ପରିବର୍ତ୍ତନ କରନ୍ତୁ" : "Change Number"}
               </button>
             </div>
           )}
@@ -367,7 +389,7 @@ export default function Step2PersonalInfo({
         {/* Alternate Mobile */}
         <div className="space-y-2">
           <label htmlFor="alternateMobile" className="block text-sm font-medium text-slate-700">
-            Alternate Mobile Number (Optional)
+            {t("alternateMobile")}
           </label>
           <input
             type="tel"
@@ -376,7 +398,7 @@ export default function Step2PersonalInfo({
             value={alternateMobile}
             onChange={(e) => updateFormState({ alternateMobile: e.target.value.replace(/\D/g, "").substring(0, 10) })}
             onBlur={() => registerBlur("alternateMobile")}
-            placeholder="Alternate contact number"
+            placeholder={language === "hi" ? "वैकल्पिक संपर्क नंबर" : language === "or" ? "ବୈକଳ୍ପିକ ସମ୍ପର୍କ ନମ୍ବର" : "Alternate contact number"}
             className={`block w-full px-4 py-3 bg-white border rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errors.alternateMobile ? "border-red-500" : "border-slate-200 hover:border-slate-300"
             }`}

@@ -16,6 +16,10 @@ import { findLatestDraft, clearDraft, clearAllDrafts } from "./utils/drafts";
 import { decryptData } from "./utils/encryption";
 import { useAutoSave } from "./hooks/useAutoSave";
 import SessionTimer from "./components/SessionTimer";
+import { useLanguage } from "./context/LanguageContext";
+import { Language } from "./utils/translations";
+import { Globe } from "lucide-react";
+
 
 // Import step components
 import Step1LoanType from "./components/Step1LoanType";
@@ -28,6 +32,7 @@ import Step7Documents from "./components/Step7Documents";
 import Step8Review from "./components/Step8Review";
 
 export default function App() {
+  const { language, setLanguage, t, languages } = useLanguage();
   const [formState, setFormState] = useState<FormState>(INITIAL_FORM_STATE);
   const [currentStep, setCurrentStep] = useState(1);
   const [blurredFields, setBlurredFields] = useState<Record<string, boolean>>({});
@@ -348,14 +353,14 @@ export default function App() {
 
   // Step headers list
   const stepsList = [
-    { num: 1, label: "Basic Info" },
-    { num: 2, label: "Personal" },
-    { num: 3, label: "Identity KYC" },
-    { num: 4, label: "Address" },
-    { num: 5, label: "Occupation" },
-    { num: 6, label: "Co-Borrower", conditional: true },
-    { num: 7, label: "Documents" },
-    { num: 8, label: "Review" }
+    { num: 1, label: t("step1Short") },
+    { num: 2, label: t("step2Short") },
+    { num: 3, label: t("step3Short") },
+    { num: 4, label: t("step4Short") },
+    { num: 5, label: t("step5Short") },
+    { num: 6, label: t("step6Short"), conditional: true },
+    { num: 7, label: t("step7Short") },
+    { num: 8, label: t("step8Short") }
   ];
 
   // Calculate actual completion percentage for progress bar
@@ -393,25 +398,42 @@ export default function App() {
       )}
 
       {/* HEADER RAIL */}
-      <header className="bg-white border-b border-zinc-200/80 sticky top-0 z-40 px-6 lg:px-8 py-4 flex justify-between items-center">
+      <header className="bg-white border-b border-zinc-200/80 sticky top-0 z-40 px-6 lg:px-8 py-4 flex flex-col sm:flex-row gap-4 sm:gap-0 justify-between sm:items-center">
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded bg-zinc-900 flex items-center justify-center text-white font-semibold text-base tracking-wider">
             L
           </div>
           <div>
             <h1 className="text-sm font-semibold text-zinc-900 tracking-tight leading-none">LendSwift</h1>
-            <span className="text-[10px] text-zinc-400 uppercase font-medium tracking-wider mt-1 block">Digital Lending Platform</span>
+            <span className="text-[10px] text-zinc-400 uppercase font-medium tracking-wider mt-1 block">{t("subtitle")}</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 self-end sm:self-auto">
+          {/* Language Selector Dropdown */}
+          <div className="flex items-center gap-1.5 bg-zinc-50 border border-zinc-200 rounded px-2.5 py-1.5">
+            <Globe className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as Language)}
+              className="border-none text-xs font-semibold text-zinc-700 bg-transparent focus:ring-0 cursor-pointer focus:outline-none"
+              aria-label={t("selectLanguage")}
+            >
+              {languages.map((lang) => (
+                <option key={lang.code} value={lang.code} className="text-zinc-900 bg-white">
+                  {lang.nativeName}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <button
             type="button"
             onClick={handleManualSave}
             disabled={isSaving}
-            className="text-xs font-medium text-zinc-600 hover:text-zinc-900 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 px-3.5 py-1.5 rounded transition-colors cursor-pointer flex items-center gap-1.5"
+            className="text-xs font-semibold text-zinc-600 hover:text-zinc-900 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 px-3.5 py-1.5 rounded transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
           >
-            {isSaving ? "Saving..." : "Save Draft"}
+            {isSaving ? t("submitting") : t("saveDraft")}
           </button>
         </div>
       </header>
@@ -429,18 +451,22 @@ export default function App() {
             </div>
             
             <div className="space-y-2">
-              <h2 className="text-xl font-semibold text-zinc-900 tracking-tight">Application Submitted</h2>
-              <p className="text-sm text-zinc-500">Your digital loan portfolio has been logged and queued for automatic credit scoring review.</p>
+              <h2 className="text-xl font-semibold text-zinc-900 tracking-tight">{t("applicationSubmitted")}</h2>
+              <p className="text-sm text-zinc-500">{t("submittedDesc")}</p>
             </div>
-
+            
             <div className="bg-zinc-50 border border-zinc-200 rounded p-4 inline-block font-mono text-center">
-              <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-medium">LendSwift Reference ID</span>
+              <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-medium">{t("refIdLabel")}</span>
               <p className="text-base font-medium text-zinc-950 mt-1">{successRefId}</p>
             </div>
 
             <div className="border-t border-zinc-100 pt-6 space-y-4">
               <p className="text-xs text-zinc-400 leading-relaxed">
-                As per the **RBI Digital Lending Guidelines (September 2022)**, a Key Fact Statement (KFS) containing your final repayment structure, cooling-off provisions, and grievances details has been dispatched to your verified email.
+                {language === "hi"
+                  ? "आरबीआई डिजिटल लेंडिंग गाइडलाइन्स (सितंबर 2022) के अनुसार, आपकी अंतिम पुनर्भुगतान संरचना, कूलिंग-ऑफ प्रावधानों और शिकायतों के विवरण से युक्त एक प्रमुख तथ्य विवरण (केएफएस) आपके सत्यापित ईमेल पर भेज दिया गया है।"
+                  : language === "or"
+                  ? "ଆରବିଆଇ ଡିଜିଟାଲ୍ ଋଣ ନିର୍ଦ୍ଦେଶାବଳୀ (ସେପ୍ଟେମ୍ବର ୨୦୨୨) ଅନୁଯାୟୀ, ଆପଣଙ୍କର ଚୂଡ଼ାନ୍ତ ପରିଶୋଧ ଗଠନ, କୁଲିଂ-ଅଫ୍ ବ୍ୟବସ୍ଥା ଏବଂ ଅଭିଯୋଗ ବିବରଣୀ ସମ୍ବଳିତ ଏକ କି-ଫ୍ୟାକ୍ଟ ଷ୍ଟେଟମେଣ୍ଟ (KFS) ଆପଣଙ୍କର ଯାଞ୍ଚ ହୋଇଥିବା ଇମେଲକୁ ପଠାଯାଇଛି।"
+                  : "As per the **RBI Digital Lending Guidelines (September 2022)**, a Key Fact Statement (KFS) containing your final repayment structure, cooling-off provisions, and grievances details has been dispatched to your verified email."}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
@@ -455,7 +481,7 @@ export default function App() {
                   }}
                   className="px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-50 font-medium text-xs rounded transition-colors cursor-pointer"
                 >
-                  Download Summary PDF
+                  {t("downloadPDF")}
                 </button>
                 <button
                   type="button"
@@ -466,7 +492,7 @@ export default function App() {
                   }}
                   className="px-5 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-medium text-xs rounded transition-colors cursor-pointer"
                 >
-                  Apply for New Loan
+                  {t("applyNew")}
                 </button>
               </div>
             </div>
@@ -562,7 +588,7 @@ export default function App() {
                   disabled={currentStep === 1}
                   className="px-4 py-2 border border-zinc-200 hover:bg-zinc-50 text-zinc-700 font-medium text-xs rounded disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                 >
-                  Previous
+                  {t("previous")}
                 </button>
 
                 <div className="flex gap-2">
@@ -572,7 +598,7 @@ export default function App() {
                       onClick={handleSubmitApplication}
                       className="px-5 py-2 bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs rounded transition-colors cursor-pointer flex items-center gap-1.5"
                     >
-                      Submit Application
+                      {t("submitApplication")}
                     </button>
                   ) : (
                     <button
@@ -580,7 +606,7 @@ export default function App() {
                       onClick={handleNext}
                       className="px-5 py-2 bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs rounded transition-colors cursor-pointer flex items-center gap-1"
                     >
-                      Continue
+                      {t("continue")}
                       <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                       </svg>
@@ -604,9 +630,13 @@ export default function App() {
             </div>
 
             <div className="space-y-2">
-              <h3 id="resume-title" className="text-lg font-semibold text-zinc-900 tracking-tight">Saved Draft Found</h3>
+              <h3 id="resume-title" className="text-lg font-semibold text-zinc-900 tracking-tight">{t("savedDraftFound")}</h3>
               <p className="text-xs text-zinc-500 leading-relaxed">
-                You have a saved, encrypted draft application for a **{resumeModalData.loanType} Loan** which was last saved on **{new Date(resumeModalData.timestamp).toLocaleString()}**.
+                {language === "hi"
+                  ? `आपके पास एक ${t(resumeModalData.loanType as any) || resumeModalData.loanType} ऋण के लिए एक सहेजा गया, एन्क्रिप्टेड ड्राफ्ट आवेदन है जो अंतिम बार ${new Date(resumeModalData.timestamp).toLocaleString()} को सहेजा गया था।`
+                  : language === "or"
+                  ? `ଆପଣଙ୍କର ଏକ ${t(resumeModalData.loanType as any) || resumeModalData.loanType} ଋଣ ପାଇଁ ଏକ ସଂରକ୍ଷିତ, ଏନକ୍ରିପ୍ଟ ହୋଇଥିବା ଡ୍ରାଫ୍ଟ ଆବେଦନ ଅଛି ଯାହା ଶେଷ ଥର ପାଇଁ ${new Date(resumeModalData.timestamp).toLocaleString()} ରେ ସଂରକ୍ଷିତ ହୋଇଥିଲା।`
+                  : `You have a saved, encrypted draft application for a **${resumeModalData.loanType} Loan** which was last saved on **${new Date(resumeModalData.timestamp).toLocaleString()}**.`}
               </p>
             </div>
 
@@ -616,14 +646,14 @@ export default function App() {
                 onClick={handleStartFresh}
                 className="w-full px-4 py-2.5 bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border border-zinc-200 font-medium text-xs rounded transition-colors cursor-pointer"
               >
-                Start Fresh
+                {t("startFresh")}
               </button>
               <button
                 type="button"
                 onClick={handleResume}
                 className="w-full px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs rounded transition-colors cursor-pointer"
               >
-                Resume Progress
+                {t("resumeProgress")}
               </button>
             </div>
           </div>
@@ -634,19 +664,15 @@ export default function App() {
       <footer className="bg-white border-t border-zinc-200/80 py-8 px-6 md:px-8 mt-12 text-[11px] text-zinc-400">
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 leading-relaxed">
           <div className="space-y-2">
-            <h4 className="font-semibold text-zinc-800 uppercase tracking-wider text-[9px]">Cooling-Off Provisions</h4>
+            <h4 className="font-semibold text-zinc-800 uppercase tracking-wider text-[9px]">{t("coolingOffTitle")}</h4>
             <p>
-              Under RBI Guideline (DL/2022/01), borrowers have an explicit right to exit any digital loan contract within a **72-hour cooling-off period** from execution, without any cancellation penalty, except for the proportional interest rate accrued.
+              {t("coolingOffDesc")}
             </p>
           </div>
           <div className="space-y-2">
-            <h4 className="font-semibold text-zinc-800 uppercase tracking-wider text-[9px]">Grievance Redressal &amp; Escalation</h4>
+            <h4 className="font-semibold text-zinc-800 uppercase tracking-wider text-[9px]">{t("grievanceTitle")}</h4>
             <p>
-              **Nodal Grievance Officer**: Mr. Pratik Kumar, Head of Compliance (Email: grievance@lendswift.in, Ph: 1800-419-5555). {" "}
-              If your complaint is not resolved within 30 days, you may escalate to the **RBI Banking Ombudsman** via CMS at {" "}
-              <a href="https://cms.rbi.org.in" target="_blank" rel="noopener noreferrer" className="text-zinc-900 font-medium hover:underline underline-offset-4">
-                cms.rbi.org.in
-              </a>.
+              {t("grievanceDesc")}
             </p>
           </div>
         </div>
