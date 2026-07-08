@@ -10,6 +10,7 @@ export interface UploadedFile {
   originalSize: number; // in bytes (before compression)
   compressedSize?: number; // in bytes (after compression)
   base64: string; // File contents encoded as base64
+  verified?: "PENDING" | "APPROVED" | "REJECTED"; // Verification status
 }
 
 export interface FormState {

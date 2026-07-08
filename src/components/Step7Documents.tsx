@@ -57,47 +57,47 @@ export default function Step7Documents({
     // PAN Card Copy
     configs.push({
       key: "panCardCopy",
-      label: language === "hi" ? "पैन कार्ड की प्रति" : language === "or" ? "PAN କାର୍ଡର କପି" : "PAN Card Copy",
+      label: language === "hi" ? "पैन कार्ड की प्रति (PDF)" : language === "or" ? "PAN କାର୍ଡର କପି (PDF)" : "PAN Card Copy (PDF)",
       description: panVerified
         ? (language === "hi" ? "वैकल्पिक - आपका पैन पहले से ही केवाईसी के माध्यम से सत्यापित है" : language === "or" ? "ବୈକଳ୍ପିକ - ଆପଣଙ୍କର PAN ପୂର୍ବରୁ KYC ମାଧ୍ୟମରେ ସତ୍ୟାପିତ ହୋଇଛି" : "Optional - Your PAN is already verified via KYC")
-        : (language === "hi" ? "आवश्यक - आधिकारिक पैन कार्ड चित्र या पीडीएफ अपलोड करें (अधिकतम 5MB)" : language === "or" ? "ଆବଶ୍ୟକ - ଆଧିକାରୀକ PAN କାର୍ଡ ଚିତ୍ର କିମ୍ବା PDF ଅପଲୋଡ୍ କରନ୍ତୁ (ସର୍ବାଧିକ ୫MB)" : "Required - Upload official PAN card image or PDF (Max 5MB)"),
+        : (language === "hi" ? "आवश्यक - आधिकारिक पैन कार्ड पीडीएफ अपलोड करें (अधिकतम 10MB)" : language === "or" ? "ଆବଶ୍ୟକ - ଆଧିକାରୀକ PAN କାର୍ଡ PDF ଅପଲୋଡ୍ କରନ୍ତୁ (ସର୍ବାଧିକ ୧୦MB)" : "Required - Upload official PAN card PDF strictly (Max 10MB)"),
       required: !panVerified,
-      maxSizeMB: 5
+      maxSizeMB: 10
     });
 
     // Aadhaar Card
     configs.push({
       key: "aadhaarCardCopy",
-      label: language === "hi" ? "आधार कार्ड (आगे और पीछे)" : language === "or" ? "ଆଧାର କାର୍ଡ (ଆଗ ଏବଂ ପଛ)" : "Aadhaar Card (Front & Back)",
-      description: language === "hi" ? "आवश्यक - एक ही पीडीएफ या चित्र में आगे और पीछे की प्रतियां (अधिकतम 5MB)" : language === "or" ? "ଆବଶ୍ୟକ - ଗୋଟିଏ PDF କିମ୍ବା ଚିତ୍ରରେ ଆଗ ଏବଂ ପଛ କପି (ସର୍ବାଧିକ ୫MB)" : "Required - Front and back copies in a single PDF or image (Max 5MB)",
+      label: language === "hi" ? "आधार कार्ड (आगे और पीछे) (PDF)" : language === "or" ? "ଆଧାର କାର୍ଡ (ଆଗ ଏବଂ ପଛ) (PDF)" : "Aadhaar Card (Front & Back) (PDF)",
+      description: language === "hi" ? "आवश्यक - एक ही पीडीएफ में आगे और पीछे की प्रतियां (अधिकतम 10MB)" : language === "or" ? "ଆବଶ୍ୟକ - ଗୋଟିଏ PDF ରେ ଆଗ ଏବଂ ପଛ କପି (ସର୍ବାଧିକ ୧୦MB)" : "Required - Front and back copies in a single PDF strictly (Max 10MB)",
       required: true,
-      maxSizeMB: 5
+      maxSizeMB: 10
     });
 
     // Income proof (Salary slips or ITR)
     if (isSalaried) {
       configs.push({
         key: "salarySlips",
-        label: language === "hi" ? "वेतन पर्ची (पिछले 3 महीने)" : language === "or" ? "ଦରମା ସ୍ଲିପ୍ (ଶେଷ ୩ ମାସ)" : "Salary Slips (Last 3 Months)",
-        description: language === "hi" ? "आवश्यक - आपके वर्तमान नियोक्ता से मासिक वेतन पर्ची (प्रत्येक अधिकतम 5MB)" : language === "or" ? "ଆବଶ୍ୟକ - ଆପଣଙ୍କର ବର୍ତ୍ତମାନର ନିଯୁକ୍ତିଦାତାଙ୍କ ମାସିକ ଦରମା ସ୍ଲିପ୍ (ପ୍ରତ୍ୟେକ ସର୍ବାଧିକ ୫MB)" : "Required - Monthly payslips from your current employer (Max 5MB each)",
+        label: language === "hi" ? "वेतन पर्ची (PDF)" : language === "or" ? "ଦରମା ସ୍ଲିପ୍ (PDF)" : "Salary Slips (PDF)",
+        description: language === "hi" ? "आवश्यक - मासिक वेतन पर्ची पीडीएफ (अधिकतम 10MB)" : language === "or" ? "ଆବଶ୍ୟକ - ମାସିକ ଦରମା ସ୍ଲିପ୍ PDF (ସର୍ବାଧିକ ୧୦MB)" : "Required - Monthly payslips as PDF strictly (Max 10MB)",
         required: true,
-        maxSizeMB: 5
+        maxSizeMB: 10
       });
     } else {
       configs.push({
         key: "itr",
-        label: language === "hi" ? "आयकर रिटर्न (पिछले 2 वर्ष)" : language === "or" ? "ଆୟକର ରିଟର୍ଣ୍ଣ (ଶେଷ ୨ ବର୍ଷ)" : "Income Tax Returns (Last 2 Years)",
-        description: language === "hi" ? "आवश्यक - पिछले दो वित्तीय वर्षों के लिए आईटीआर-वी की स्वीकृत प्रति (प्रत्येक अधिकतम 5MB)" : language === "or" ? "ଆବଶ୍ୟକ - ଶେଷ ଦୁଇଟି ଆର୍ଥିକ ବର୍ଷ ପାଇଁ ITR-V ର ସ୍ୱୀକୃତ କପି (ପ୍ରତ୍ୟେକ ସର୍ବାଧିକ ୫MB)" : "Required - Acknowledged copy of ITR-V for the last two financial years (Max 5MB each)",
+        label: language === "hi" ? "आयकर रिटर्न (PDF)" : language === "or" ? "ଆୟକर ରିଟର୍ଣ୍ଣ (PDF)" : "Income Tax Returns (PDF)",
+        description: language === "hi" ? "आवश्यक - पिछले दो वित्तीय वर्षों के लिए आईटीआर-वी की स्वीकृत प्रति पीडीएफ (अधिकतम 10MB)" : language === "or" ? "ଆବଶ୍ୟକ - ଶେଷ ଦୁଇଟି ଆର୍ଥିକ ବର୍ଷ ପାଇଁ ITR-V ର ସ୍ୱୀକୃତ କପି PDF (ସର୍ବାଧିକ ୧୦MB)" : "Required - Acknowledged copy of ITR-V as PDF strictly (Max 10MB)",
         required: true,
-        maxSizeMB: 5
+        maxSizeMB: 10
       });
     }
 
     // Bank Statements
     configs.push({
       key: "bankStatements",
-      label: language === "hi" ? "बैंक विवरण (पिछले 6 महीने)" : language === "or" ? "ବ୍ୟାଙ୍କ ବିବରଣୀ (ଶେଷ ୬ ମାସ)" : "Bank Statements (Last 6 Months)",
-      description: language === "hi" ? "आवश्यक - वेतन/प्राथमिक लेनदेन खाते का विस्तृत विवरण (अधिकतम 10MB)" : language === "or" ? "ଆବଶ୍ୟକ - ଦରମା/ପ୍ରାଥମିକ କାରବାର ଆକାଉଣ୍ଟର ବିସ୍ତୃତ ବିବରଣୀ (ସର୍ବାଧିକ ୧୦MB)" : "Required - Detailed statement of salary/primary transaction account (Max 10MB)",
+      label: language === "hi" ? "बैंक विवरण (PDF)" : language === "or" ? "ବ୍ୟାଙ୍କ ବିବରଣୀ (PDF)" : "Bank Statements (PDF)",
+      description: language === "hi" ? "आवश्यक - वेतन/प्राथमिक लेनदेन खाते का विस्तृत विवरण पीडीएफ (अधिकतम 10MB)" : language === "or" ? "ଆବଶ୍ୟକ - ଦରମା/ପ୍ରାଥମିକ କାରବାର ଆକାଉଣ୍ଟର ବିସ୍ତୃତ ବିବରଣୀ PDF (ସର୍ବାଧିକ ୧୦MB)" : "Required - Detailed statement of salary/primary transaction account as PDF strictly (Max 10MB)",
       required: true,
       maxSizeMB: 10
     });
@@ -106,8 +106,8 @@ export default function Step7Documents({
     if (isHome) {
       configs.push({
         key: "propertyDocs",
-        label: language === "hi" ? "संपत्ति और संपार्श्विक दस्तावेज" : language === "or" ? "ସମ୍ପତ୍ତି ଏବଂ ବନ୍ଧକ ଦସ୍ତାବେଜ" : "Property & Collateral Documents",
-        description: language === "hi" ? "आवश्यक - बिक्री विलेख, कर रसीद, या बिल्डर खरीदार समझौता (अधिकतम 10MB)" : language === "or" ? "ଆବଶ୍ୟକ - ବିକ୍ରୟ ଦଲିଲ୍, ଟ୍ୟାକ୍ସ ରସିଦ୍, କିମ୍ବା ବିଲ୍ଡର କ୍ରେତା ଚୁକ୍ତିପତ୍ର (ସର୍ବାଧିକ ୧୦MB)" : "Required - Sale deed, tax receipt, or builder buyer agreement (Max 10MB)",
+        label: language === "hi" ? "संपत्ति और संपार्श्विक दस्तावेज (PDF)" : language === "or" ? "ସମ୍ପତ୍ତି ଏବଂ ବନ୍ଧକ ଦସ୍ତାବେଜ (PDF)" : "Property & Collateral Documents (PDF)",
+        description: language === "hi" ? "आवश्यक - बिक्री विलेख, कर रसीद, या बिल्डर खरीदार समझौता पीडीएफ (अधिकतम 10MB)" : language === "or" ? "ଆବଶ୍ୟକ - ବିକ୍ରୟ ଦଲିଲ୍, ଟ୍ୟାକ୍ସ ରସିଦ୍, କିମ୍ବା ବିଲ୍ଡर କ୍ରେତା ଚୁକ୍ତିପତ୍ର PDF (ସର୍ବାଧିକ ୧୦MB)" : "Required - Sale deed, tax receipt, or builder buyer agreement as PDF strictly (Max 10MB)",
         required: true,
         maxSizeMB: 10
       });
@@ -117,19 +117,19 @@ export default function Step7Documents({
     if (isBusiness) {
       configs.push({
         key: "businessRegistration",
-        label: language === "hi" ? "व्यवसाय पंजीकरण प्रमाणपत्र" : language === "or" ? "ବ୍ୟବସାୟ ପଞ୍ଜୀକରଣ ପ୍ରମାଣପତ୍ର" : "Business Registration Certificate",
-        description: language === "hi" ? "आवश्यक - जीएसटी प्रमाणपत्र, एमएसएमई उद्यम, या साझेदारी विलेख (अधिकतम 5MB)" : language === "or" ? "ଆବଶ୍ୟକ - GST ପ୍ରମାଣପତ୍ର, MSME ଉଦ୍ୟମ, କିମ୍ବା ଅଂଶୀଦାର ଦଲିଲ୍ (ସର୍ବାଧିକ ୫MB)" : "Required - GST certificate, MSME Udyam, or Partnership Deed (Max 5MB)",
+        label: language === "hi" ? "व्यवसाय पंजीकरण प्रमाणपत्र (PDF)" : language === "or" ? "ବ୍ୟବସାୟ ପଞ୍ଜୀକରଣ ପ୍ରମାଣପତ୍ର (PDF)" : "Business Registration Certificate (PDF)",
+        description: language === "hi" ? "आवश्यक - जीएसटी प्रमाणपत्र, एमएसएमई उद्यम, या साझेदारी विलेख पीडीएफ (अधिकतम 10MB)" : language === "or" ? "ଆବଶ୍ୟକ - GST ପ୍ରମାଣପତ୍ର, MSME ଉଦ୍ୟମ, କିମ୍ବା ଅଂଶୀଦାର ଦଲିଲ୍ PDF (ସର୍ବାଧିକ ୧୦MB)" : "Required - GST certificate, MSME Udyam, or Partnership Deed as PDF strictly (Max 10MB)",
         required: true,
-        maxSizeMB: 5
+        maxSizeMB: 10
       });
 
       if (employmentType === "Business Owner") {
         configs.push({
           key: "gstReturns",
-          label: language === "hi" ? "जीएसटी रिटर्न (पिछले 4 तिमाहियों)" : language === "or" ? "GST ରିଟର୍ଣ୍ଣ (ଶେଷ ୪ ତ୍ରୈମାସିକ)" : "GST Returns (Last 4 Quarters)",
-          description: language === "hi" ? "आवश्यक - जीएसटीआर-1 या जीएसटीआर-3बी फाइलिंग (प्रत्येक अधिकतम 5MB)" : language === "or" ? "ଆବଶ୍ୟକ - GSTR-1 କିମ୍ବା GSTR-3B ଫାଇଲିଂ (ପ୍ରତ୍ୟେକ ସର୍ବାଧିକ ୫MB)" : "Required - GSTR-1 or GSTR-3B filings (Max 5MB each)",
+          label: language === "hi" ? "जीएसटी रिटर्न (PDF)" : language === "or" ? "GST ରିଟର୍ଣ୍ଣ (PDF)" : "GST Returns (PDF)",
+          description: language === "hi" ? "आवश्यक - जीएसटीआर-1 या जीएसटीआर-3बी फाइलिंग पीडीएफ (अधिकतम 10MB)" : language === "or" ? "ଆବଶ୍ୟକ - GSTR-1 କିମ୍ବା GSTR-3B ଫାଇଲିଂ PDF (ସର୍ବାଧିକ ୧୦MB)" : "Required - GSTR-1 or GSTR-3B filings as PDF strictly (Max 10MB)",
           required: true,
-          maxSizeMB: 5
+          maxSizeMB: 10
         });
       }
     }
@@ -137,18 +137,15 @@ export default function Step7Documents({
     // Photograph
     configs.push({
       key: "photograph",
-      label: language === "hi" ? "पासपोर्ट आकार का फोटो" : language === "or" ? "ପାସପୋର୍ଟ ସାଇଜ୍ ଫଟୋଗ୍ରାଫ୍" : "Passport Size Photograph",
-      description: language === "hi" ? "आवश्यक - स्पष्ट पृष्ठभूमि के साथ हालिया रंगीन पासपोर्ट आकार की फोटो (अधिकतम 2MB)" : language === "or" ? "ଆବଶ୍ୟକ - ସ୍ପଷ୍ଟ ପୃଷ୍ଠଭୂମି ସହିତ ସାମ୍ପ୍ରତିକ ରଙ୍ଗୀନ ପାସପୋର୍ଟ ସାଇଜ୍ ଫଟୋ (ସର୍ବାଧିକ ୨MB)" : "Required - Recent colored passport size photo with a clear background (Max 2MB)",
+      label: language === "hi" ? "पासपोर्ट आकार का फोटो (PDF)" : language === "or" ? "ପାସପୋର୍ଟ ସାଇଜ୍ ଫଟୋଗ୍ରାଫ୍ (PDF)" : "Passport Size Photograph (PDF)",
+      description: language === "hi" ? "आवश्यक - स्पष्ट पृष्ठभूमि के साथ हालिया रंगीन पासपोर्ट आकार की फोटो पीडीएफ (अधिकतम 10MB)" : language === "or" ? "ଆବଶ୍ୟକ - ସ୍ପଷ୍ଟ ପୃଷ୍ଠଭୂମି ସହିତ ସାମ୍ପ୍ରତିକ ରଙ୍ଗୀନ ପାସପୋର୍ଟ ସାଇଜ୍ ଫଟୋ PDF (ସର୍ବାଧିକ ୧୦MB)" : "Required - Recent colored passport size photo as PDF strictly (Max 10MB)",
       required: true,
-      maxSizeMB: 2
+      maxSizeMB: 10
     });
 
     return configs;
   };
 
-  const configs = getDocumentConfigs();
-
-  // Handlers for File Selection & Upload Simulation
   const handleFileChange = async (
     key: string,
     e: React.ChangeEvent<HTMLInputElement>,
@@ -157,12 +154,12 @@ export default function Step7Documents({
     const selectedFiles = e.target.files;
     if (!selectedFiles || selectedFiles.length === 0) return;
 
-    // Check count constraint: max 3 files per type
-    const currentFiles = uploadedFiles[key] || [];
-    if (currentFiles.length + selectedFiles.length > 3) {
+    // Limit to 3 files per category
+    const list = uploadedFiles[key] || [];
+    if (list.length + selectedFiles.length > 3) {
       alert(
         language === "hi"
-          ? "प्रति दस्तावेज़ श्रेणी में अधिकतम 3 फ़ाइलों की अनुमति है।"
+          ? "प्रत्येक दस्तावेज़ श्रेणी के लिए अधिकतम 3 फ़ाइलें अनुमत हैं।"
           : language === "or"
           ? "ଦସ୍ତାବେଜ ଶ୍ରେଣୀ ପ୍ରତି ସର୍ବାଧିକ ୩ଟି ଫାଇଲ୍ ପାଇଁ ଅନୁମତି ଅଛି।"
           : "Maximum 3 files are allowed per document category."
@@ -178,20 +175,20 @@ export default function Step7Documents({
     for (let i = 0; i < selectedFiles.length; i++) {
       const file = selectedFiles[i];
 
-      // Validate Format (PDF, JPG, PNG)
-      const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
+      // Validate Format (PDF Only)
+      const allowedTypes = ["application/pdf"];
       if (!allowedTypes.includes(file.type)) {
         alert(
           language === "hi"
-            ? `फ़ाइल ${file.name} समर्थित नहीं है। केवल PDF, JPG और PNG स्वीकार किए जाते हैं।`
+            ? `फ़ाइल ${file.name} समर्थित नहीं है। केवल PDF स्वीकार किए जाते हैं।`
             : language === "or"
-            ? `ଫାଇଲ୍ ${file.name} ସମର୍ଥିତ ନୁହେଁ। କେବଳ PDF, JPG ଏବଂ PNG ଗ୍ରହଣ କରାଯାଏ।`
-            : `File ${file.name} is not supported. Only PDF, JPG, and PNG are accepted.`
+            ? `ଫାଇଲ୍ ${file.name} ସମର୍ଥିତ ନୁହେଁ। କେବଳ PDF ଗ୍ରହଣ କରାଯାଏ।`
+            : `File ${file.name} is not supported. Only PDF documents are accepted.`
         );
         continue;
       }
 
-      // Validate File Size
+      // Validate File Size (Max 10MB)
       const maxSizeBytes = maxSizeMB * 1024 * 1024;
       if (file.size > maxSizeBytes) {
         alert(
@@ -208,35 +205,19 @@ export default function Step7Documents({
       setActiveUpload(key, file.name);
 
       let processedFile: UploadedFile;
-      const isImage = ["image/jpeg", "image/png", "image/jpg"].includes(file.type);
 
       try {
-        if (isImage) {
-          // Perform image compression (as specified in C4)
-          const compResult = await compressImage(file);
-          const base64Data = await fileToBase64(compResult.blob);
-
-          processedFile = {
-            id: Math.random().toString(36).substring(7),
-            name: file.name,
-            type: file.type,
-            size: compResult.compressedSize,
-            originalSize: compResult.originalSize,
-            compressedSize: compResult.compressedSize,
-            base64: base64Data
-          };
-        } else {
-          // No compression for PDFs
-          const base64Data = await fileToBase64(file);
-          processedFile = {
-            id: Math.random().toString(36).substring(7),
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            originalSize: file.size,
-            base64: base64Data
-          };
-        }
+        // No compression for PDFs, direct base64 conversion
+        const base64Data = await fileToBase64(file);
+        processedFile = {
+          id: Math.random().toString(36).substring(7),
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          originalSize: file.size,
+          base64: base64Data,
+          verified: "PENDING"
+        };
 
         newlyProcessedFiles.push(processedFile);
       } catch (err) {
@@ -426,6 +407,8 @@ export default function Step7Documents({
       }
     }
   }, []);
+
+  const configs = getDocumentConfigs();
 
   return (
     <div className="space-y-6" id="step7-container">
